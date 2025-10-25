@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>いきものコネクト＆さがし</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=M+PLUS+Rounded+1c:wght@700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', 'Inter', sans-serif;
+            touch-action: manipulation;
+        }
+
+        /* --- 共通スタイル --- */
+        .screen {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        @media (min-width: 640px) {
+            .game-title { font-size: 3.5rem; }
+        }
+        .game-subtitle {
+            font-size: 1.1rem;
+            color: #4b5563; /* gray-600 */
+            margin-bottom: 2rem;
+        }
+        @media (min-width: 640px) {
+            .game-subtitle { font-size: 1.25rem; }
+        }
+        .game-button {
+            width: 100%;
+            color: white;
+            font-weight: 700;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem; /* 12px */
+            font-size: 1.25rem; /* 20px */
+            transition: all 0.2s;
+            transform: scale(1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .game-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        /* --- コネクトゲーム（神経衰弱）スタイル --- */
+        .card {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card.is-flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .card-back {
+            background-color: #4ade80; /* green-400 */
+            color: white;
+            font-size: 3rem;
+        }
+        .card-front {
+            background-color: #f0fdf4; /* green-50 */
+            color: #166534; /* green-800 */
+            font-size: 2.5rem;
+            transform: rotateY(180deg);
+            padding: 8px;
+            line-height: 1;
+        }
+        .card.is-matched {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        /* ヒント用アニメーション */
+        .card.is-hinting .card-back {
+            animation: hint-blink 0.5s 3;
+        }
+        @keyframes hint-blink {
+            50% {
+                transform: scale(1.1);
+                background-color: #fde047; /* yellow-400 */
+            }
+        }
+
+        /* グリッド */
+        .grid-tutorial { grid-template-columns: repeat(2, 1fr); max-width: 200px; }
+        .grid-easy { grid-template-columns: repeat(4, 1fr); }
+        .grid-medium { grid-template-columns: repeat(4, 1fr); }
+        .grid-hard { grid-template-columns: repeat(5, 1fr); }
+        @media (max-width: 640px) {
+            .card-back { font-size: 2rem; }
+            .card-front { font-size: 1.8rem; }
+            .grid-tutorial { max-width: 150px; }
+            .grid-easy { grid-template-columns: repeat(3, 1fr); }
+            .grid-medium { grid-template-columns: repeat(4, 1fr); }
+            .grid-hard { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        /* --- モーダル共通 --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; /* JSで制御 */
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 20px;
+        }
+        /* 簡易モーダル（せいかい/ざんねん） */
+        #simple-modal-content {
+            padding: 30px 40px;
+            border-radius: 16px;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+        }
+        #simple-modal-content.success {
+            background: linear-gradient(135deg, #68d391, #38a169); /* green */
+        }
+        #simple-modal-content.error {
+            background: linear-gradient(135deg, #fc8181, #e53e3e); /* red */
+        }
+        /* 解説モーダル */
+        #explanation-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        #explanation-text {
+            font-size: 1.25rem;
+            color: #1f2937;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        /* --- いきものさがしゲーム スタイル --- */
+        #find-game-area {
+            width: 100%;
+            max-width: 800px;
+            height: 65vh;
+            border-radius: 12px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+            border: 4px solid #86efac; /* green-300 */
+        }
+        #find-game-svg {
+            width: 100%;
+            height: 100%;
+        }
+        .target-animal {
+            cursor: pointer;
+            transition: opacity 0.3s ease, transform 0.2s ease;
+            opacity: 0.9; /* 少しだけ透明にして探しにくく */
+        }
+        .target-animal:hover {
+            opacity: 1;
+            transform: scale(1.2);
+            stroke: #fef08a; /* yellow-200 */
+            stroke-width: 2px;
+        }
+        .target-animal.is-found {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        #find-game-targets {
+            display: flex;
+            flex-direction: column; /* 縦並びに変更 */
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            max-width: 800px;
+            width: 100%;
+        }
+        .target-item {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #6b7280; /* gray-500 */
+            transition: all 0.3s;
+        }
+        .target-item.is-found {
+            color: #10b981; /* green-500 */
+            text-decoration: line-through;
+        }
+        /* 解説エリアの共通スタイル */
+        .explanation-list {
+            text-align: left;
+            background: #f9fafb; /* gray-50 */
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem; /* 8px */
+            max-height: 16rem; /* 256px */
+            overflow-y: auto;
+            margin-bottom: 2rem;
+            border: 1px solid #e5e7eb; /* gray-200 */
+        }
+        .explanation-list h3 {
+            font-size: 1.5rem; /* 24px */
+            font-weight: 700;
+            color: #166534; /* green-800 */
+            margin-bottom: 1rem;
+        }
+        .explanation-list div {
+            font-size: 1.1rem; /* 18px */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div id="app">
+
+        <!-- 0. ゲーム選択画面 -->
+        <div id="game-select-screen" class="screen active">
+            <div class="text-center p-6 bg-white rounded-2xl shadow-xl max-w-lg w-full">
+                <h1 class="game-title text-green-700">いきもの ワールド</h1>
+                <p class="game-subtitle">どちらのゲームであそぶ？</p>
+                
+                <div class="space-y-4">
+                    <button id="select-connect-game" class="game-button bg-blue-500 hover:bg-blue-600">
+                        🤝 いきものコネクト！
+                    </button>
+                    <button id="select-find-game" class="game-button bg-yellow-500 hover:bg-yellow-600">
+                        👀 いきもの かくれんぼ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. コネクトゲーム スタート画面 -->
+        <div id="connect-start-screen" class="screen">
+            <div class="text-center p-6 bg-white rounded-2xl shadow-xl max-w-lg w-full">
+                <h1 class="game-title text-blue-600">いきものコネクト！</h1>
+                <p class="game-subtitle">みぢかな なかまを みつけよう</p>
+                
+                <div class="space-y-4">
+                    <button data-difficulty="tutorial" class="difficulty-btn game-button bg-green-500 hover:bg-green-600">
+                        おためし (2ペア)
+                    </button>
+                    <button data-difficulty="easy" class="difficulty-btn game-button bg-blue-500 hover:bg-blue-600">
+                        かんたん (6ペア)
+                    </button>
+                    <button data-difficulty="medium" class="difficulty-btn game-button bg-yellow-500 hover:bg-yellow-600">
+                        ふつう (8ペア)
+                    </button>
+                    <button data-difficulty="hard" class="difficulty-btn game-button bg-red-500 hover:bg-red-600">
+                        むずかしい (10ペア)
+                    </button>
+                    <button id="connect-back-button" class="game-button bg-gray-400 hover:bg-gray-500 mt-6">
+                        もどる
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. コネクトゲーム ゲーム画面 -->
+        <div id="connect-game-screen" class="screen">
+            <div class="w-full max-w-3xl mx-auto">
+                <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-md mb-6">
+                    <div>
+                        <span class="text-lg font-bold text-gray-600">のこりペア:</span>
+                        <span id="pairs-left" class="text-2xl font-extrabold text-blue-700">0</span>
+                    </div>
+                    <div>
+                        <span class="text-lg font-bold text-gray-600">じかん:</span>
+                        <span id="timer" class="text-2xl font-extrabold text-red-600">0</span>
+                    </div>
+                </div>
+
+                <div id="connect-game-board" class="grid gap-2 sm:gap-4">
+                    <!-- カードはJSで生成されます -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. コネクトゲーム 結果・解説画面 -->
+        <div id="connect-result-screen" class="screen">
+            <div class="text-center p-6 sm:p-10 bg-white rounded-2xl shadow-xl max-w-2xl w-full">
+                <h2 id="connect-result-title" class="text-5xl font-extrabold text-yellow-500 mb-4">クリア！</h2>
+                <p id="connect-result-time" class="text-2xl text-gray-700 mb-8">かかったじかん: 60びょう</p>
+                
+                <div class="explanation-list">
+                    <h3>みつけた「つながり」いちらん</h3>
+                    <div id="connect-explanation-area" class="space-y-4">
+                        <!-- 解説はJSで生成されます -->
+                    </div>
+                </div>
+
+                <button id="connect-restart-button" class="game-button bg-green-500 hover:bg-green-600">
+                    もういちど あそぶ
+                </button>
+            </div>
+        </div>
+
+        <!-- 4. さがしゲーム ゲーム画面 -->
+        <div id="find-game-screen" class="screen">
+            <div class="w-full max-w-3xl mx-auto flex flex-col items-center">
+                <h1 class="game-title text-yellow-600">いきもの かくれんぼ</h1>
+                <p class="game-subtitle">みつけられるかな？</p>
+                
+                <div id="find-game-targets">
+                    <!-- さがす対象リストがJSで入ります -->
+                </div>
+                
+                <div id="find-game-area">
+                    <svg id="find-game-svg" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+                        <!-- SVG背景と動物がJSで入ります -->
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 5. さがしゲーム 結果画面 -->
+        <div id="find-result-screen" class="screen">
+            <div class="text-center p-6 sm:p-10 bg-white rounded-2xl shadow-xl max-w-2xl w-full">
+                <h2 id="find-result-title" class="text-5xl font-extrabold text-yellow-500 mb-4">ぜんぶ みつけた！</h2>
+                <p id="find-result-message" class="text-2xl text-gray-700 mb-8">すごいね！かんさつ めいじん！</D>
+                
+                <div class="explanation-list">
+                    <h3>みつけた「かくれんぼ」の ひみつ</h3>
+                    <div id="find-explanation-area" class="space-y-4">
+                        <!-- 解説はJSで生成されます -->
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <button id="find-restart-button" class="game-button bg-green-500 hover:bg-green-600">
+                        もういちど あそぶ
+                    </button>
+                    <button id="find-back-button" class="game-button bg-gray-400 hover:bg-gray-500">
+                        ゲームを えらぶ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 共通モーダル（せいかい/ざんねん/ヒント） -->
+    <div id="simple-modal-overlay" class="modal-overlay">
+        <div id="simple-modal-content" class="">
+            <!-- メッセージはJSで設定 -->
+        </div>
+    </div>
+    
+    <!-- 共通 解説モーダル (コネクト/さがし 両方で使う) -->
+    <div id="explanation-modal-overlay" class="modal-overlay">
+        <div id="explanation-modal-content">
+            <p id="explanation-text">ここに解説が入ります。</p>
+            <button id="explanation-close-btn" class="game-button bg-blue-500 hover:bg-blue-600">
+                つぎへ
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- 0. 共通 DOM とロジック ---
+            const screens = {
+                gameSelect: document.getElementById('game-select-screen'),
+                connectStart: document.getElementById('connect-start-screen'),
+                connectGame: document.getElementById('connect-game-screen'),
+                connectResult: document.getElementById('connect-result-screen'),
+                findGame: document.getElementById('find-game-screen'),
+                findResult: document.getElementById('find-result-screen'),
+            };
+            
+            const simpleModalOverlay = document.getElementById('simple-modal-overlay');
+            const simpleModalContent = document.getElementById('simple-modal-content');
+            
+            // 共通解説モーダル
+            const explanationModal = document.getElementById('explanation-modal-overlay');
+            const explanationText = document.getElementById('explanation-text');
+            const explanationCloseBtn = document.getElementById('explanation-close-btn');
+
+            // 画面切り替え
+            function showScreen(screenId) {
+                Object.values(screens).forEach(screen => screen.classList.remove('active'));
+                screens[screenId].classList.add('active');
+            }
+
+            // 簡易モーダル表示（せいかい/ざんねん/ヒント）
+            function showSimpleModal(message, type, duration = 1000) {
+                simpleModalContent.textContent = message;
+                simpleModalContent.className = type === 'success' ? 'success' : 'error';
+                simpleModalOverlay.style.display = 'flex';
+                
+                setTimeout(hideSimpleModal, duration);
+            }
+            
+            function hideSimpleModal() {
+                simpleModalOverlay.style.display = 'none';
+            }
+
+            // ゲーム選択ボタンのリスナー
+            document.getElementById('select-connect-game').addEventListener('click', () => showScreen('connectStart'));
+            document.getElementById('select-find-game').addEventListener('click', () => initFindGame());
+            document.getElementById('connect-back-button').addEventListener('click', () => showScreen('gameSelect'));
+
+
+            // --- 1. いきものコネクト！ (神経衰弱) ---
+
+            // コネクトゲーム DOM
+            const connectDoms = {
+                difficultyButtons: document.querySelectorAll('.difficulty-btn'),
+                gameBoard: document.getElementById('connect-game-board'),
+                pairsLeftEl: document.getElementById('pairs-left'),
+                timerEl: document.getElementById('timer'),
+                resultTitle: document.getElementById('connect-result-title'),
+                resultTime: document.getElementById('connect-result-time'),
+                explanationArea: document.getElementById('connect-explanation-area'),
+                restartButton: document.getElementById('connect-restart-button'),
+            };
+
+            // コネクトゲーム カードデータ
+            const allPairs = {
+                // Tutorial
+                'T1': [{ emoji: '🐶', name: 'イヌ' }, { emoji: '🦴', name: 'ホネ' }],
+                'T2': [{ emoji: '🐱', name: 'ネコ' }, { emoji: '🐟', name: 'さかな' }],
+                // Easy
+                'A': [{ emoji: '🐝', name: 'ミツバチ' }, { emoji: '🌸', name: 'サクラ' }],
+                'B': [{ emoji: '🐸', name: 'カエル' }, { emoji: '💧', name: 'みずべ' }],
+                'C': [{ emoji: '🦋', name: 'アゲハチョウ' }, { emoji: '🌿', name: 'ミカンの は' }],
+                'D': [{ emoji: '🐞', name: 'テントウムシ' }, { emoji: '🦠', name: 'アブラムシ' }],
+                'E': [{ emoji: '🐦', name: 'とり' }, { emoji: '🍓', name: 'きの み' }],
+                'F': [{ emoji: '🐟', name: 'メダカ' }, { emoji: '🌾', name: 'たんぼ' }],
+                // Medium
+                'G': [{ emoji: '🐛', name: 'ようちゅう' }, { emoji: '🦋', name: 'チョウ' }], // 'C' とは別ペア扱い
+                'H': [{ emoji: '🍄', name: 'キノコ' }, { emoji: '🍂', name: 'おちば' }],
+                'I': [{ emoji: '🌳', name: 'き' }, { emoji: '☀️', name: 'たいよう' }],
+                'J': [{ emoji: '🦇', name: 'コウモリ' }, { emoji: '🦟', name: 'カ' }],
+                'K': [{ emoji: '🐌', name: 'カタツムリ'}, { emoji: '🥬', name: 'キャベツ'}],
+                'L': [{ emoji: '🦀', name: 'カニ'}, { emoji: '🌊', name: 'うみ'}],
+                'M': [{ emoji: '🕸️', name: 'クモのす'}, { emoji: '🪰', name: 'ハエ'}],
+                'N': [{ emoji: '🐿️', name: 'リス'}, { emoji: '🌰', name: 'どんぐり'}],
+                // Hard (Mediumのペア + 新しいペア)
+                'O': [{ emoji: '🐻', name: 'クマ'}, { emoji: '🍯', name: 'ハチミツ'}],
+                'P': [{ emoji: '🐧', name: 'ペンギン'}, { emoji: '🐠', name: 'さかな'}],
+                'Q': [{ emoji: '💩', name: 'フン' }, { emoji: '🪲', name: 'フンコロガシ' }],
+                'R': [{ emoji: '👨‍🌾', name: 'ひと' }, { emoji: '🍅', name: 'やさい' }],
+            };
+            
+            const explanations = {
+                'T1': '🐶 イヌは 🦴 ホネが だいすき！',
+                'T2': '🐱 ネコは 🐟 さかなを たべるのが すきだね。',
+                'A': '🐝 ミツバチは 🌸 サクラの みつを もらう かわりに、かふんを はこんで あげるんだ。',
+                'B': '🐸 カエルは こどもの とき 💧 みずべ（いけ や たんぼ）で しか いきられないんだ。',
+                'C': '🦋 アゲハチョウの ようちゅうは、🌿 ミカンや サンショウの なかまの はっぱ しか たべないよ。',
+                'D': '🐞 テントウムシは、しょくぶつの しるを すう 🦠 アブラムシを たべて くれるんだ。',
+                'E': '🐦 とりは 🍓 きの みを たべて、フンと いっしょに とおくまで タネを はこぶんだ。',
+                'F': '🐟 メダカは 🌾 たんぼ のような、おだやかな ながれの みずが だいすき なんだ。',
+                'G': '🐛 ようちゅうは、さなぎ になって 🦋 すごい かたちに へんしん（へんたい）するんだ。',
+                'H': '🍄 キノコや 🍂 おちばは、つちの えいように なって、あたらしい いのちを そだてるよ。（ぶんかいしゃ）',
+                'I': '🌳 きは ☀️ たいようの ひかりを あびて、じぶんで えいよう（さんそ も）を つくるんだ。（こうごうせい）',
+                'J': '🦇 コウモリは、よるに 🦟 カなどの むしを たくさん たべて くれるんだよ。',
+                'K': '🐌 カタツムリは、やわらかい 🥬 キャベツや アジサイの はが だいすき。',
+                'L': '🦀 カニは 🌊 うみ や かわの みずべに すんでいる なかまが おおいよ。',
+                'M': '🕸️ クモは すを つくって、つかまえた 🪰 ハエなどの むしを たべるんだ。',
+                'N': '🐿️ リスは 🌰 どんぐりなどの きの みを あつめて、ふゆに そなえるんだ。',
+                'O': '🐻 クマは 🍯 ハチミツが だいすき なんだ。ハチに さされないよう きをつけて！',
+                'P': '🐧 ペンギンは うみの なかを およいで 🐠 さかなを つかまえて たべるよ。',
+                'Q': '🪲 フンコロガシは どうぶつの 💩 フンを まるめて、ごはん にしたり タマゴを うんだり するんだ。',
+                'R': '👨‍🌾 ひとは 🍅 やさいや おこめを そだてて たべているね。これも しぜんの つながり！',
+            };
+
+            const difficultyPairs = {
+                tutorial: ['T1', 'T2'],
+                easy: ['A', 'B', 'C', 'D', 'E', 'F'],
+                medium: ['G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'],
+                hard: ['A', 'D', 'H', 'I', 'J', 'M', 'N', 'O', 'P', 'Q']
+            };
+
+            // コネクトゲーム 状態変数
+            let currentGameCards = [];
+            let flippedCards = [];
+            let matchedPairs = 0;
+            let totalPairs = 0;
+            let timerInterval = null;
+            let secondsElapsed = 0;
+            let isChecking = false;
+            let currentDifficulty = 'easy';
+            let usedExplanations = {};
+            let consecutiveMistakes = 0; 
+
+            // ゲーム初期化
+            function initConnectGame(difficulty) {
+                currentDifficulty = difficulty;
+                matchedPairs = 0;
+                secondsElapsed = 0;
+                flippedCards = [];
+                isChecking = false;
+                usedExplanations = {};
+                consecutiveMistakes = 0;
+                
+                const gamePairIds = difficultyPairs[difficulty];
+                totalPairs = gamePairIds.length;
+                connectDoms.pairsLeftEl.textContent = totalPairs;
+                
+                currentGameCards = [];
+                gamePairIds.forEach(id => {
+                    if (allPairs[id] && explanations[id]) {
+                        usedExplanations[id] = explanations[id];
+                        const pair = allPairs[id];
+                        currentGameCards.push({ pairId: id, emoji: pair[0].emoji, name: pair[0].name });
+                        currentGameCards.push({ pairId: id, emoji: pair[1].emoji, name: pair[1].name });
+                    }
+                });
+
+                currentGameCards = shuffleArray(currentGameCards);
+                createConnectBoard();
+                
+                showScreen('connectGame');
+                startConnectTimer();
+            }
+
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            function createConnectBoard() {
+                connectDoms.gameBoard.innerHTML = '';
+                connectDoms.gameBoard.className = `grid gap-2 sm:gap-4 grid-${currentDifficulty}`;
+                
+                currentGameCards.forEach((cardData, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.dataset.id = index;
+                    card.dataset.pairId = cardData.pairId;
+                    
+                    card.innerHTML = `
+                        <div class="card-inner">
+                            <div class="card-face card-back">🌿</div>
+                            <div class="card-face card-front" style="font-size: ${cardData.emoji.length > 1 ? '1.5rem' : '2.5rem'};">
+                                ${cardData.emoji}
+                            </div>
+                        </div>
+                    `;
+                    card.addEventListener('click', handleCardClick);
+                    connectDoms.gameBoard.appendChild(card);
+                });
+            }
+
+            function handleCardClick(event) {
+                if (isChecking) return;
+                const clickedCard = event.currentTarget;
+                if (clickedCard.classList.contains('is-flipped') || clickedCard.classList.contains('is-matched')) {
+                    return;
+                }
+                
+                clickedCard.classList.add('is-flipped');
+                flippedCards.push(clickedCard);
+                
+                if (flippedCards.length === 2) {
+                    isChecking = true; // 2枚めくったらチェック開始
+                    setTimeout(checkConnectMatch, 800); // 800ms 待ってから判定
+                }
+            }
+
+            // 解説モーダル表示
+            function showExplanationModal(text, callback) {
+                stopConnectTimer(); // タイマー停止
+                explanationText.textContent = text;
+                explanationModal.style.display = 'flex';
+                
+                // 「つぎへ」ボタンのリスナー
+                explanationCloseBtn.onclick = () => {
+                    explanationModal.style.display = 'none';
+                    callback(); // コールバック実行
+                };
+            }
+
+            function checkConnectMatch() {
+                const [card1, card2] = flippedCards;
+                const pairId1 = card1.dataset.pairId;
+                const pairId2 = card2.dataset.pairId;
+                
+                if (pairId1 === pairId2) {
+                    // --- マッチした ---
+                    consecutiveMistakes = 0; // ミスカウントリセット
+                    const explanation = explanations[pairId1] || 'すごいね！';
+                    
+                    showExplanationModal(explanation, () => {
+                        // マッチ処理の続き
+                        flippedCards.forEach(card => card.classList.add('is-matched'));
+                        matchedPairs++;
+                        connectDoms.pairsLeftEl.textContent = totalPairs - matchedPairs;
+                        
+                        flippedCards = [];
+                        isChecking = false;
+                        
+                        // ゲームクリアかチェック
+                        if (matchedPairs === totalPairs) {
+                            endConnectGame(true);
+                        } else {
+                            startConnectTimer(); // ゲームが続くならタイマー再開
+                        }
+                    });
+                    
+                } else {
+                    // --- マッチしなかった ---
+                    consecutiveMistakes++;
+                    // ★ 変更点: 表示時間を 800ms に短縮
+                    showSimpleModal('ざんねん...', 'error', 800); 
+                    
+                    setTimeout(() => {
+                        card1.classList.remove('is-flipped');
+                        card2.classList.remove('is-flipped');
+                        flippedCards = [];
+                        isChecking = false;
+                        
+                        // ヒントチェック
+                        if (consecutiveMistakes >= 5) {
+                            showHint();
+                            consecutiveMistakes = 0;
+                        }
+                    // ★ 変更点: タイムアウトも 800ms に
+                    }, 800); 
+                }
+            }
+            
+            // ヒント機能
+            function showHint() {
+                showSimpleModal('ヒントだよ！', 'success', 1500);
+                
+                const remainingCards = document.querySelectorAll('#connect-game-board .card:not(.is-matched):not(.is-flipped)');
+                if (remainingCards.length < 2) return;
+
+                // ランダムに1枚選ぶ
+                const hintCard1 = remainingCards[Math.floor(Math.random() * remainingCards.length)];
+                const hintPairId = hintCard1.dataset.pairId;
+                let hintCard2 = null;
+
+                // そのペアを探す
+                remainingCards.forEach(card => {
+                    if (card !== hintCard1 && card.dataset.pairId === hintPairId) {
+                        hintCard2 = card;
+                    }
+                });
+
+                if (hintCard2) {
+                    hintCard1.classList.add('is-hinting');
+                    hintCard2.classList.add('is-hinting');
+                    setTimeout(() => {
+                        hintCard1.classList.remove('is-hinting');
+                        hintCard2.classList.remove('is-hinting');
+                    }, 1500); // 1.5秒点滅
+                }
+            }
+
+            function endConnectGame(isClear) {
+                stopConnectTimer();
+                showScreen('connectResult');
+                
+                if (isClear) {
+                    connectDoms.resultTitle.textContent = 'クリア！';
+                    connectDoms.resultTitle.className = 'text-5xl font-extrabold text-yellow-500 mb-4';
+                    connectDoms.resultTime.textContent = `かかったじかん: ${secondsElapsed} びょう`;
+                }
+                
+                displayConnectExplanations();
+            }
+
+            function displayConnectExplanations() {
+                connectDoms.explanationArea.innerHTML = '';
+                Object.values(usedExplanations).forEach(text => {
+                    const p = document.createElement('p');
+                    p.textContent = text;
+                    connectDoms.explanationArea.appendChild(p);
+                });
+            }
+
+            // タイマー
+            function startConnectTimer() {
+                stopConnectTimer(); // 念のためリセット
+                timerInterval = setInterval(() => {
+                    secondsElapsed++;
+                    connectDoms.timerEl.textContent = secondsElapsed;
+                }, 1000);
+            }
+
+            function stopConnectTimer() {
+                clearInterval(timerInterval);
+            }
+
+            // コネクトゲーム リスナー設定
+            connectDoms.difficultyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    initConnectGame(button.dataset.difficulty);
+                });
+            });
+            connectDoms.restartButton.addEventListener('click', () => {
+                showScreen('connectStart');
+            });
+
+
+            // --- 2. いきもの さがし (かくれんぼ) ---
+            
+            // さがしゲーム DOM
+            const findDoms = {
+                targetList: document.getElementById('find-game-targets'),
+                gameArea: document.getElementById('find-game-area'),
+                svgCanvas: document.getElementById('find-game-svg'),
+                resultTitle: document.getElementById('find-result-title'),
+                resultMsg: document.getElementById('find-result-message'),
+                explanationArea: document.getElementById('find-explanation-area'),
+                restartBtn: document.getElementById('find-restart-button'),
+                backBtn: document.getElementById('find-back-button'),
+            };
+
+            const SVG_NS = "http://www.w3.org/2000/svg";
+
+            // ★ 変更点: さがしゲーム データ (保護色テーマ)
+            const findGameData = [
+                { 
+                    id: 'A', name: 'ナナフシ', hint: 'ほそながい えだ？', 
+                    explanation: 'せいかい！これは ナナフシ だよ。ほそい えだ に そっくりで、てき から みつかりにくいんだ。',
+                    draw: (svg) => {
+                        const el = document.createElementNS(SVG_NS, 'line');
+                        el.setAttribute('x1', '120'); el.setAttribute('y1', '110');
+                        el.setAttribute('x2', '180'); el.setAttribute('y2', '125');
+                        el.setAttribute('stroke', '#755C48'); // 背景の木(#8B4513)より少し明るい
+                        el.setAttribute('stroke-width', '4');
+                        return el;
+                    }
+                },
+                { 
+                    id: 'B', name: 'カエル', hint: 'くさ と おなじ いろ',
+                    explanation: 'みつけた！ アマガエル だね。くさむら と おなじ みどりいろ で かくれているんだ。',
+                    draw: (svg) => {
+                        const el = document.createElementNS(SVG_NS, 'circle');
+                        el.setAttribute('cx', '50'); el.setAttribute('cy', '270');
+                        el.setAttribute('r', '7');
+                        el.setAttribute('fill', '#34A153'); // 背景の草(#2E8B57)より少し明るい
+                        return el;
+                    }
+                },
+                {
+                    id: 'C', name: 'コノハチョウ', hint: 'かれた はっぱ？',
+                    explanation: 'すごい！ コノハチョウ だ！はねを とじると、かれた はっぱ に そっくりだね。',
+                    draw: (svg) => {
+                        const el = document.createElementNS(SVG_NS, 'path');
+                        el.setAttribute('d', 'M330 230 L350 250 L335 260 L330 230 Z');
+                        el.setAttribute('fill', '#A0522D'); // 茶色
+                        return el;
+                    }
+                },
+                {
+                    id: 'D', name: 'バッタ', hint: 'みどり の くさばね',
+                    explanation: 'やったね！ バッタ だ！みどりいろの からだは、くさむら に まぎれるのに ぴったり！',
+                    draw: (svg) => {
+                        const el = document.createElementNS(SVG_NS, 'ellipse');
+                        el.setAttribute('cx', '250'); el.setAttribute('cy', '280');
+                        el.setAttribute('rx', '10'); el.setAttribute('ry', '3');
+                        el.setAttribute('fill', '#559E2B'); // 背景の草(#228B22)より明るい
+                        el.setAttribute('transform', 'rotate(-30 250 280)');
+                        return el;
+                    }
+                },
+                {
+                    id: 'E', name: 'モンシロチョウ', hint: 'しろい はな？',
+                    explanation: 'せいかい！ モンシロチョウ だよ。しろい はな の ちかく にいると みつかりにくいね。',
+                    draw: (svg) => {
+                        const el = document.createElementNS(SVG_NS, 'path');
+                        el.setAttribute('d', 'M150 50 Q 155 45 160 50 L 155 55 Z M 155 55 L 160 60 Q 155 65 150 60 Z');
+                        el.setAttribute('fill', '#F0F0F0'); // 白
+                        return el;
+                    }
+                },
+            ];
+            
+            // ★ 変更点: SVG背景 (より複雑に)
+            const findGameBG = `
+                <!-- そら -->
+                <rect width="400" height="200" fill="#87CEEB"></rect>
+                <!-- たいよう -->
+                <circle cx="350" cy="50" r="30" fill="#FFD700"></circle>
+                <!-- くも -->
+                <circle cx="150" cy="50" r="15" fill="#FFFFFF"></circle>
+                <circle cx="165" cy="50" r="15" fill="#FFFFFF"></circle>
+                <circle cx="158" cy="40" r="15" fill="#FFFFFF"></circle>
+                <!-- じめん（おく） -->
+                <rect y="190" width="400" height="110" fill="#228B22"></rect>
+                <!-- じめん（てまえ） -->
+                <path d="M 0 300 C 50 280, 150 280, 200 290 S 300 310, 400 290 V 300 H 0 Z" fill="#2E8B57" />
+                <!-- き（みき） -->
+                <rect x="100" y="100" width="30" height="100" fill="#8B4513"></rect>
+                <!-- き（はっぱ） -->
+                <circle cx="115" cy="80" r="40" fill="#006400"></circle>
+                <circle cx="95" cy="100" r="35" fill="#006400"></circle>
+                <circle cx="135" cy="100" r="35" fill="#006400"></circle>
+                <!-- くさむら -->
+                <circle cx="40" cy="275" r="20" fill="#2E8B57"></circle>
+                <circle cx="60" cy="280" r="25" fill="#2E8B57"></circle>
+                <circle cx="240" cy="285" r="30" fill="#228B22"></circle>
+                <circle cx="260" cy="280" r="25" fill="#228B22"></circle>
+                <!-- かれは（おちば） -->
+                <path d="M320 240 L340 260 L325 270 L320 240 Z" fill="#A0522D" opacity="0.5"></path>
+            `;
+
+            // さがしゲーム 状態変数
+            let findGameTargets = [];
+            let foundTargetsCount = 0;
+            let findGameExplanations = {};
+
+            function initFindGame() {
+                findGameTargets = shuffleArray([...findGameData]);
+                foundTargetsCount = 0;
+                findGameExplanations = {}; // 解説リストをリセット
+                
+                updateTargetList();
+                placeAnimals();
+                showScreen('findGame');
+            }
+            
+            // 探すリストをUIに表示
+            function updateTargetList(foundId = null) {
+                if (foundId === null) {
+                    findDoms.targetList.innerHTML = '';
+                    findGameTargets.forEach(target => {
+                        const item = document.createElement('span');
+                        item.id = `target-item-${target.id}`;
+                        item.className = 'target-item';
+                        item.textContent = `❓ ${target.hint}`; // ヒントを表示
+                        findDoms.targetList.appendChild(item);
+                    });
+                } else {
+                    const item = document.getElementById(`target-item-${foundId}`);
+                    const target = findGameTargets.find(t => t.id === foundId);
+                    if (item && target) {
+                        item.classList.add('is-found');
+                        item.textContent = `⭕ ${target.name}`; // 見つけたら名前に変更
+                    }
+                }
+            }
+            
+            // 動物を配置
+            function placeAnimals() {
+                findDoms.svgCanvas.innerHTML = findGameBG; // 背景をリセット
+                
+                findGameTargets.forEach(animal => {
+                    const el = animal.draw(findDoms.svgCanvas); // 描画関数を呼び出し
+                    el.classList.add('target-animal');
+                    el.dataset.targetId = animal.id;
+                    
+                    el.addEventListener('click', handleTargetClick);
+                    findDoms.svgCanvas.appendChild(el);
+                });
+            }
+            
+            // 動物クリック処理
+            function handleTargetClick(e) {
+                e.stopPropagation(); // SVGの親へのイベント伝播を停止
+                const clickedEl = e.currentTarget;
+                if (clickedEl.classList.contains('is-found')) return;
+                
+                const id = clickedEl.dataset.targetId;
+                const target = findGameTargets.find(t => t.id === id);
+                if (!target) return;
+
+                // 解説を保存
+                findGameExplanations[id] = target.explanation;
+
+                // 解説モーダルを表示
+                showExplanationModal(target.explanation, () => {
+                    clickedEl.classList.add('is-found');
+                    foundTargetsCount++;
+                    updateTargetList(id); // UIのリストにチェックマーク
+                    
+                    if (foundTargetsCount === findGameTargets.length) {
+                        setTimeout(() => {
+                            endFindGame();
+                        }, 500); // 少し待ってから結果画面へ
+                    }
+                });
+            }
+
+            // さがしゲーム終了処理
+            function endFindGame() {
+                showScreen('findResult');
+                // 解説一覧を表示
+                findDoms.explanationArea.innerHTML = '';
+                findGameTargets.forEach(target => {
+                    const p = document.createElement('p');
+                    p.textContent = findGameExplanations[target.id] || 'みつけたね！';
+                    findDoms.explanationArea.appendChild(p);
+                });
+            }
+            
+            // さがしゲーム リスナー設定
+            findDoms.restartBtn.addEventListener('click', initFindGame);
+            findDoms.backBtn.addEventListener('click', () => showScreen('gameSelect'));
+
+        });
+    </script>
+</body>
+</html>
+
