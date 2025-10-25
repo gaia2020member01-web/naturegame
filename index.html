@@ -14,7 +14,7 @@
     <style>
         body {
             font-family: 'M PLUS Rounded 1c', 'Inter', sans-serif;
-            touch-action: manipulation;
+            touch-action: manipulation; /* ダブルタップズームを無効化 */
         }
 
         /* --- 共通スタイル --- */
@@ -254,6 +254,17 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
+        /* ★ エラー入力 (シェイク) */
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+          20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .is-invalid {
+            animation: shake 0.5s ease-in-out;
+            border: 2px solid #e53e3e; /* red-600 */
+        }
+
 
         /* --- いきものさがしゲーム スタイル --- */
         #find-game-area {
@@ -329,20 +340,40 @@
         .explanation-list div {
             font-size: 1.1rem; /* 18px */
         }
+
+        /* --- ★ 設定画面 --- */
+        #settings-screen .setting-item {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 1.5rem; /* 24px */
+        }
+        #settings-screen label {
+            display: block;
+            font-size: 1.1rem; /* 18px */
+            font-weight: 700;
+            margin-bottom: 0.5rem; /* 8px */
+            color: #374151; /* gray-700 */
+        }
+        #settings-screen input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+        #settings-screen select {
+            width: 100%;
+            padding: 0.75rem; /* 12px */
+            font-size: 1.1rem; /* 18px */
+            border: 1px solid #d1d5db; /* gray-300 */
+            border-radius: 0.5rem; /* 8px */
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
-
-    <!-- ★ BGM用 audio タグ (削除) -->
-    <!-- <audio id="bg-music" src="music.mp3" loop></audio> --> <!-- ★ 削除しました -->
 
     <div id="app">
 
         <!-- 0. ゲーム選択画面 -->
         <div id="game-select-screen" class="screen active">
-             <!-- ★ relative を削除しました -->
             <div class="text-center p-6 bg-white rounded-2xl shadow-xl max-w-lg w-full">
-                <!-- ★ 古いミュートボタンを削除しました -->
                 <h1 class="game-title text-green-700">いきもの ワールド</h1>
                 <p class="game-subtitle">どちらのゲームであそぶ？</p>
                 
@@ -353,7 +384,51 @@
                     <button id="select-find-game" class="game-button bg-yellow-500 hover:bg-yellow-600">
                         👀 いきもの かくれんぼ
                     </button>
+                    <!-- ★ 設定ボタン -->
+                    <button id="settings-button" class="game-button bg-gray-500 hover:bg-gray-600">
+                        ⚙️ せってい
+                    </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- ★ 設定画面 (新規追加) -->
+        <div id="settings-screen" class="screen">
+            <div class="text-center p-6 bg-white rounded-2xl shadow-xl max-w-lg w-full">
+                <h1 class="game-title text-gray-700">⚙️ せってい</h1>
+                
+                <!-- 音量 -->
+                <div class="setting-item">
+                    <label for="volume-slider">おんりょう (BGM)</label>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xl">🔈</span>
+                        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+                        <span class="text-xl">🔊</span>
+                    </div>
+                </div>
+
+                <!-- BGM選択 -->
+                <div class="setting-item">
+                    <label for="bgm-select">BGM を えらぶ</label>
+                    <select id="bgm-select">
+                        <option value="music.mp3">ミュージック 1</option>
+                        <option value="music2.mp3">ミュージック 2</option>
+                        <option value="music3.mp3">ミュージック 3</option> <!-- ★ 追加 -->
+                    </select>
+                </div>
+
+                <!-- ランキングリセット -->
+                <div class="setting-item mt-8">
+                    <label>ランキングリセット</label>
+                    <button id="reset-ranking-btn" class="game-button bg-red-600 hover:bg-red-700">
+                        ランキングを ぜんぶ けす
+                    </button>
+                </div>
+
+                <!-- 戻るボタン -->
+                <button id="settings-back-button" class="game-button bg-gray-400 hover:bg-gray-500 mt-12">
+                    もどる
+                </button>
             </div>
         </div>
 
@@ -530,7 +605,7 @@
             <h2 class="text-3xl font-extrabold text-yellow-500 mb-3">🎉ランクイン！🎉</h2>
             <p id="ranking-modal-time" class="text-xl text-gray-700 mb-4">タイム: 00 びょう</p>
             <p class="text-lg text-gray-600 mb-4">10い いない です！<br>なまえを にゅうりょく してください。</p>
-            <input type="text" id="player-name-input" class="w-full p-3 border border-gray-300 rounded-lg text-lg" placeholder="なまえ (8もじ まで)" maxlength="8">
+            <input type="text" id="player-name-input" class="w-full p-3 border border-gray-300 rounded-lg text-lg transition-all" placeholder="なまえ (8もじ まで)" maxlength="8">
             <button id="ranking-submit-btn" class="game-button bg-green-500 hover:bg-green-600 mt-5">
                 とうろく
             </button>
@@ -549,11 +624,24 @@
         </div>
     </div>
 
+    <!-- ★ ランキングリセット 確認モーダル (新規追加) -->
+    <div id="confirm-reset-modal" class="modal-overlay">
+        <div id="confirm-modal-content"> <!-- 既存のスタイルを流用 -->
+            <h3 class="text-xl font-bold mb-4">かくにん</h3>
+            <p class="text-gray-600 mb-6">ほんとうに ランキングを ぜんぶ けしますか？<br>けした データは もどりません。</p>
+            <div class="flex justify-center space-x-4">
+                <button id="confirm-reset-cancel-btn" class="game-button bg-gray-400 hover:bg-gray-500" style="width: 48%;">やめる</button>
+                <button id="confirm-reset-ok-btn" class="game-button bg-red-500 hover:bg-red-600" style="width: 48%;">けす</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ★ BGM用 (MuteボタンとAudioタグ) -->
-    <button id="mute-toggle-btn" class="fixed bottom-4 right-4 bg-white p-3 rounded-full shadow-lg z-50 text-xl">
-        🎵
+    <button id="mute-toggle-btn" class="fixed bottom-4 right-4 bg-white p-3 rounded-full shadow-lg z-50 text-lg font-bold">
+        BGM 🎵
     </button>
-    <audio id="bgm" loop src="music.mp3"></audio>
+    <!-- ★ src を削除 (JSで設定) -->
+    <audio id="bgm" loop></audio>
 
 
     <script>
@@ -562,6 +650,7 @@
             // --- 0. 共通 DOM とロジック ---
             const screens = {
                 gameSelect: document.getElementById('game-select-screen'),
+                settings: document.getElementById('settings-screen'), // ★ 追加
                 connectStart: document.getElementById('connect-start-screen'),
                 connectGame: document.getElementById('connect-game-screen'),
                 connectResult: document.getElementById('connect-result-screen'),
@@ -569,43 +658,55 @@
                 findResult: document.getElementById('find-result-screen'),
             };
             
-            <!-- ★ 古いBGM関連のDOM取得を削除しました -->
-            
+            // 簡易モーダル DOM
             const simpleModalOverlay = document.getElementById('simple-modal-overlay');
             const simpleModalContent = document.getElementById('simple-modal-content');
             
-            // 共通解説モーダル
-            const explanationModal = document.getElementById('explanation-modal-overlay');
+            // 解説モーダル DOM
+            const explanationModalOverlay = document.getElementById('explanation-modal-overlay');
             const explanationText = document.getElementById('explanation-text');
             const explanationCloseBtn = document.getElementById('explanation-close-btn');
 
-            // ★ ランキング関連 DOM
+            // ランクインモーダル DOM
             const rankingModalOverlay = document.getElementById('ranking-modal-overlay');
             const rankingModalTime = document.getElementById('ranking-modal-time');
             const playerNameInput = document.getElementById('player-name-input');
             const rankingSubmitBtn = document.getElementById('ranking-submit-btn');
 
-            // ★ 確認モーダル DOM
+            // ★ 確認モーダル DOM (終了確認)
             const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
             const confirmOkBtn = document.getElementById('confirm-ok-btn');
             const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+            let confirmModalTarget = ''; // 'connectGame' or 'findGame'
 
             // ★ BGM DOM
             const bgm = document.getElementById('bgm');
             const muteToggleBtn = document.getElementById('mute-toggle-btn');
+
+            // ★ 設定画面 DOM (新規追加)
+            const settingsButton = document.getElementById('settings-button');
+            const settingsBackButton = document.getElementById('settings-back-button');
+            const volumeSlider = document.getElementById('volume-slider');
+            const bgmSelect = document.getElementById('bgm-select');
+            const resetRankingBtn = document.getElementById('reset-ranking-btn');
+            const confirmResetModal = document.getElementById('confirm-reset-modal');
+            const confirmResetOkBtn = document.getElementById('confirm-reset-ok-btn');
+            const confirmResetCancelBtn = document.getElementById('confirm-reset-cancel-btn');
             
             // localStorage用キー
             const RANKING_KEY = 'biodiversityGameRanking';
+            const VOLUME_KEY = 'biodiversityGameVolume'; // ★ 追加
+            const BGM_KEY = 'biodiversityGameBGM'; // ★ 追加
 
             // 画面切り替え
             function showScreen(screenId) {
                 Object.values(screens).forEach(screen => screen.classList.remove('active'));
                 screens[screenId].classList.add('active');
 
-                <!-- ★ BGM再生/停止 (bgMusic を bgm に修正) -->
+                // ★ BGM再生/停止
                 if (screenId === 'connectGame' || screenId === 'findGame') {
                     // ゲーム画面で再生
-                    if (!bgm.muted) {
+                    if (!bgm.muted && bgm.src) { // ★ src があるか確認
                         bgm.play().catch(e => console.log("BGM再生エラー: ユーザー操作が必要です。"));
                     }
                 } else {
@@ -616,23 +717,23 @@
             }
 
             // 簡易モーダル表示（せいかい/ざんねん/ヒント）
-            function showSimpleModal(message, type, duration = 1000) {
+            function showSimpleModal(type, message, duration = 1200) {
                 simpleModalContent.textContent = message;
                 simpleModalContent.className = type === 'success' ? 'success' : 'error';
                 simpleModalOverlay.style.display = 'flex';
                 
-                // ★ 変更点: ざんねん の表示時間を 800ms に短縮
-                const actualDuration = (type === 'error') ? 800 : duration;
-                setTimeout(hideSimpleModal, actualDuration);
+                // ★ duration を 800ms (0.8s) に変更 (不正解時)
+                const displayDuration = type === 'error' ? 800 : duration;
+
+                setTimeout(hideSimpleModal, displayDuration);
             }
-            
             function hideSimpleModal() {
                 simpleModalOverlay.style.display = 'none';
             }
 
             // ★ BGM再生/停止/ミュート
             function playBGM() {
-                if (bgm.paused) {
+                if (bgm.src && bgm.paused && !bgm.muted) { // ★ src があり、ミュートでないか確認
                     bgm.play().catch(e => console.log("BGM play failed:", e));
                 }
             }
@@ -641,7 +742,17 @@
             }
             muteToggleBtn.addEventListener('click', () => {
                 bgm.muted = !bgm.muted;
-                muteToggleBtn.textContent = bgm.muted ? '🔇' : '🎵';
+                // ★ ボタンのテキスト変更
+                muteToggleBtn.textContent = bgm.muted ? 'BGM 🔇' : 'BGM 🎵';
+                
+                // ★ ミュートしたら停止、解除したら再生（ゲーム中のみ）
+                if (bgm.muted) {
+                    pauseBGM();
+                } else {
+                    if (screens.connectGame.classList.contains('active') || screens.findGame.classList.contains('active')) {
+                        playBGM();
+                    }
+                }
             });
 
             // ゲーム選択ボタンのリスナー
@@ -649,186 +760,210 @@
             document.getElementById('select-find-game').addEventListener('click', () => initFindGame());
             document.getElementById('connect-back-button').addEventListener('click', () => {
                 showScreen('gameSelect');
-                pauseBGM(); // ★ BGM停止
+            });
+            // ★ 設定画面リスナー (新規追加)
+            settingsButton.addEventListener('click', () => showScreen('settings'));
+            settingsBackButton.addEventListener('click', () => showScreen('gameSelect'));
+
+            // ★ 音量スライダーリスナー
+            volumeSlider.addEventListener('input', (e) => {
+                const volume = e.target.value;
+                bgm.volume = volume;
+                localStorage.setItem(VOLUME_KEY, volume);
+            });
+
+            // ★ BGM選択リスナー
+            bgmSelect.addEventListener('change', (e) => {
+                const selectedBGM = e.target.value;
+                bgm.src = selectedBGM;
+                localStorage.setItem(BGM_KEY, selectedBGM);
+                // BGMを変更してすぐ再生 (ミュートでなければ)
+                if (!bgm.muted && (screens.connectGame.classList.contains('active') || screens.findGame.classList.contains('active'))) {
+                    playBGM();
+                }
+            });
+
+            // ★ ランキングリセットリスナー
+            resetRankingBtn.addEventListener('click', () => {
+                confirmResetModal.style.display = 'flex';
+            });
+            confirmResetOkBtn.addEventListener('click', () => {
+                localStorage.removeItem(RANKING_KEY);
+                displayRanking(); // 表示を更新
+                confirmResetModal.style.display = 'none';
+            });
+            confirmResetCancelBtn.addEventListener('click', () => {
+                confirmResetModal.style.display = 'none';
+            });
+
+            // ★ 終了確認モーダルリスナー
+            confirmCancelBtn.addEventListener('click', () => {
+                confirmModalOverlay.style.display = 'none';
+                // ゲーム中の場合、タイマーやBGMを再開
+                if (confirmModalTarget === 'connectGame') {
+                    startConnectTimer(true); // タイマー再開
+                    playBGM(); // BGM再開
+                } else if (confirmModalTarget === 'findGame') {
+                    playBGM(); // BGM再開
+                }
+            });
+            confirmOkBtn.addEventListener('click', () => {
+                if (confirmModalTarget === 'connectGame') {
+                    showScreen('connectStart');
+                } else if (confirmModalTarget === 'findGame') {
+                    showScreen('gameSelect');
+                }
+                confirmModalOverlay.style.display = 'none';
+                stopConnectTimer(); // タイマー完全停止
+                // showScreenでBGMは停止される
             });
 
 
-            // ★ ランキング取得
-            function getRanking(difficulty) {
-                const rankings = JSON.parse(localStorage.getItem(RANKING_KEY) || '{}');
-                return rankings[difficulty] || [];
-            }
-
-            // ★ ランキング保存
-            function saveRanking(difficulty, name, time) {
-                const rankings = JSON.parse(localStorage.getItem(RANKING_KEY) || '{}');
-                const currentRank = rankings[difficulty] || [];
-                
-                currentRank.push({ name: name, time: time });
-                currentRank.sort((a, b) => a.time - b.time); // タイムの昇順でソート
-                
-                rankings[difficulty] = currentRank.slice(0, 10); // 上位10件のみ保存
-                
-                localStorage.setItem(RANKING_KEY, JSON.stringify(rankings));
-            }
-
-            // ★ ランキング表示 (3カラム同時)
-            function displayRanking() {
-                const difficulties = ['easy', 'medium', 'hard'];
-                
-                difficulties.forEach(difficulty => {
-                    const listEl = document.getElementById(`ranking-list-${difficulty}`);
-                    if (!listEl) return; // 要素が存在しない場合はスキップ
-                    
-                    const rankData = getRanking(difficulty);
-                    listEl.innerHTML = ''; // リストをクリア
-
-                    if (rankData.length === 0) {
-                        listEl.innerHTML = '<li class="text-gray-500 text-center" style="list-style-type: none;">まだ とうろく がないよ</li>';
-                        return; // ★★★ 修正: 'continue' を 'return' に変更 (forEach のため)
-                    }
-
-                    rankData.forEach((record, index) => {
-                        const li = document.createElement('li');
-                        // 1位から3位にメダル
-                        let medal = '';
-                        if (index === 0) medal = '🥇 ';
-                        else if (index === 1) medal = '🥈 ';
-                        else if (index === 2) medal = '🥉 ';
-                        
-                        // XSS対策 (簡易)
-                        const safeName = document.createTextNode(record.name).textContent;
-                        
-                        li.innerHTML = `
-                            <span class="rank-name">${medal}${safeName}</span>
-                            <span class="rank-time">${record.time} びょう</span>
-                        `;
-                        listEl.appendChild(li);
-                    });
-                });
-            }
-
-            // --- 1. いきものコネクト！ (神経衰弱) ---
-
-            // コネクトゲーム DOM
-            const connectDoms = {
-                difficultyButtons: document.querySelectorAll('.difficulty-btn'),
-                gameBoard: document.getElementById('connect-game-board'),
-                pairsLeftEl: document.getElementById('pairs-left'),
-                timerEl: document.getElementById('timer'),
+            // --- 1. いきものコネクト（神経衰弱） ---
+            const connectGameDoms = {
+                board: document.getElementById('connect-game-board'),
+                pairsLeft: document.getElementById('pairs-left'),
+                timer: document.getElementById('timer'),
                 resultTitle: document.getElementById('connect-result-title'),
                 resultTime: document.getElementById('connect-result-time'),
                 explanationArea: document.getElementById('connect-explanation-area'),
-                restartButton: document.getElementById('connect-restart-button'),
-                quitButton: document.getElementById('connect-quit-game'), // ★ 追加
+                restartBtn: document.getElementById('connect-restart-button'),
+                quitGameBtn: document.getElementById('connect-quit-game'),
             };
 
-            // コネクトゲーム カードデータ
+            // ★ カードのペア定義（難易度ごとに重複しないように）
             const allPairs = {
-                // Tutorial
-                'T1': [{ emoji: '🐶', name: 'イヌ' }, { emoji: '🦴', name: 'ホネ' }],
-                'T2': [{ emoji: '🐱', name: 'ネコ' }, { emoji: '🐟', name: 'さかな' }],
-                // Easy
-                'A': [{ emoji: '🐝', name: 'ミツバチ' }, { emoji: '🌸', name: 'サクラ' }],
-                'B': [{ emoji: '🐸', name: 'カエル' }, { emoji: '💧', name: 'みずべ' }],
-                'C': [{ emoji: '🦋', name: 'アゲハチョウ' }, { emoji: '🌿', name: 'ミカンの は' }],
-                'D': [{ emoji: '🐞', name: 'テントウムシ' }, { emoji: '🦠', name: 'アブラムシ' }],
-                'E': [{ emoji: '🐦', name: 'とり' }, { emoji: '🍒', name: 'きの み' }], // ★ アイコン変更
-                'F': [{ emoji: '🐟', name: 'メダカ' }, { emoji: '🌾', name: 'たんぼ' }],
-                // Medium
-                'G': [{ emoji: '🐛', name: 'ようちゅう' }, { emoji: '🦋', name: 'チョウ' }], // 'C' とは別ペア扱い
-                'H': [{ emoji: '🍄', name: 'キノコ' }, { emoji: '🍂', name: 'おちば' }],
-                'I': [{ emoji: '🌳', name: 'き' }, { emoji: '☀️', name: 'たいよう' }],
-                'J': [{ emoji: '🦇', name: 'コウモリ' }, { emoji: '🦟', name: 'カ' }],
-                'K': [{ emoji: '🐌', name: 'カタツムリ'}, { emoji: '🥬', name: 'キャベツ'}],
-                'L': [{ emoji: '🦀', name: 'カニ'}, { emoji: '🌊', name: 'うみ'}],
-                'M': [{ emoji: '🕸️', name: 'クモのす'}, { emoji: '🪰', name: 'ハエ'}],
-                'N': [{ emoji: '🐿️', name: 'リス'}, { emoji: '🌰', name: 'どんぐり'}],
-                // Hard (Mediumのペア + 新しいペア)
-                'O': [{ emoji: '🐻', name: 'クマ'}, { emoji: '🍯', name: 'ハチミツ'}],
-                'P': [{ emoji: '🐧', name: 'ペンギン'}, { emoji: '🐠', name: 'さかな'}],
-                'Q': [{ emoji: '💩', name: 'フン' }, { emoji: '🪲', name: 'フンコロガシ' }],
-                'R': [{ emoji: '👨‍🌾', name: 'ひと' }, { emoji: '🍅', name: 'やさい' }],
-                'S': [{ emoji: '🌍', name: 'ちきゅう'}, { emoji: '♻️', name: 'リサイクル'}], // Hard専用
-                'T': [{ emoji: '🏭', name: 'こうじょう'}, { emoji: '💨', name: 'けむり'}]  // Hard専用
+                tutorial: [
+                    { id: 't1', emoji: '🐸', name: 'カエル', partner: 't2', exp: '「カエル」と「オタマジャクシ」は おなじいきもの（おやこ）だよ。みずのなかから りくのうえに すむばしょが かわるんだ。' },
+                    { id: 't2', emoji: '...<br>🐸', name: 'オタマジャクシ', partner: 't1', exp: '「オタマジャクシ」は「カエル」の あかちゃんだよ。おおきくなると てあしが はえてくるんだ。' }
+                ],
+                easy: [
+                    { id: 'e1', emoji: '🦋', name: 'チョウ', partner: 'e2', exp: '「チョウ」は「ようちゅう」が せいちょうした すがただよ。' },
+                    { id: 'e2', emoji: '🐛', name: 'ようちゅう', partner: 'e1', exp: '「ようちゅう」は「チョウ」の あかちゃん。はっぱを たべて おおきくなるよ。' },
+                    { id: 'e3', emoji: '🐝', name: 'ミツバチ', partner: 'e4', exp: '「ミツバチ」は「はな」の みつを あつめるよ。このとき、かふんを はこんで あげるんだ。（じゅふん）' },
+                    { id: 'e4', emoji: '🌸', name: 'はな', partner: 'e3', exp: '「はな」は「ミツバチ」に みつを あげる かわりに、かふんを はこんでもらうよ。' },
+                    { id: 'e5', emoji: '🐞', name: 'テントウムシ', partner: 'e6', exp: '「テントウムシ」は「アブラムシ」を たべてくれる、はたけの みかただよ。' },
+                    { id: 'e6', emoji: '...<br>🐜', name: 'アブラムシ', partner: 'e5', exp: '「アブラムシ」は しょくぶつの しるを すう ちいさなムシ。テントウムシの ごはんだよ。' },
+                    { id: 'e7', emoji: '...<br>🕷️', name: 'クモ', partner: 'e8', exp: '「クモ」は すを はって、つかまえた「コバエ」などの ちいさなムシを たべるよ。' },
+                    { id: 'e8', emoji: '...<br>🦟', name: 'コバエ', partner: 'e7', exp: '「コバエ」などの ちいさなムシは、「クモ」の ごはんになるんだ。' },
+                    { id: 'e9', emoji: '🍒', name: 'きの み', partner: 'e10', exp: '「きの み」は「クマ」の だいじな たべもの。もりで くらす どうぶつを ささえるよ。' },
+                    { id: 'e10', emoji: '🐻', name: 'クマ', partner: 'e9', exp: '「クマ」は「きの み」や さかなを たべて いきているよ。' },
+                    { id: 'e11', emoji: '...<br>🐌', name: 'カタツムリ', partner: 'e12', exp: '「カタツムリ」は「アジサイ」の はっぱが だいすき。ジメジメした ところに いるよ。' },
+                    { id: 'e12', emoji: '...<br>💠', name: 'アジサイ', partner: 'e11', exp: '「アジサイ」が さく つゆの きせつは、「カタツムリ」も よく みかけるね。' }
+                ],
+                medium: [
+                    { id: 'm1', emoji: '...<br>🐛', name: 'アオムシ', partner: 'm2', exp: '「アオムシ」は「キャベツ」の はっぱを たべて おおきくなる、モンシロチョウの ようちゅうだよ。' },
+                    { id: 'm2', emoji: '🥬', name: 'キャベツ', partner: 'm1', exp: '「キャベツ」は「アオムシ」の だいじな ごはんなんだ。' },
+                    { id: 'm3', emoji: '...<br>🦗', name: 'バッタ', partner: 'm4', exp: '「バッタ」は「イネ」などの くさを たべて いきているよ。' },
+                    { id: 'm4', emoji: '🌾', name: 'イネ', partner: 'm3', exp: '「イネ」は「バッタ」に たべられてしまう ことが あるんだ。' },
+                    { id: 'm5', emoji: '...<br>🐜', name: 'アリ', partner: 'm6', exp: '「アリ」は「アブラムシ」が だす あまい しるを もらう かわりに、てきから まもって あげるんだ。（きょうせい）' },
+                    { id: 'm6', emoji: '...<br>🐜', name: 'アブラムシ', partner: 'm5', exp: '「アブラムシ」は「アリ」に あまい しるを あげて、まもってもらうよ。（きょうせい）' },
+                    { id: 'm7', emoji: '...<br>🪲', name: 'カブトムシ', partner: 'm8', exp: '「カブトムシ」は「クヌギ」などの きの じゅえきが だいすきなんだ。' },
+                    { id: 'm8', emoji: '🌳', name: 'クヌギのき', partner: 'm7', exp: '「クヌギのき」が だす じゅえきは、「カブトムシ」たちの ごちそうだよ。' },
+                    { id: 'm9', emoji: '...<br>🦎', name: 'トカゲ', partner: 'm10', exp: '「トカゲ」は「バッタ」などの ちいさなムシを つかまえて たべるよ。' },
+                    { id: 'm10', emoji: '...<br>🦗', name: 'バッタ', partner: 'm9', exp: '「バッタ」は くさを たべるけど、「トカゲ」に たべられてしまう ことも あるんだ。' },
+                    { id: 'm11', emoji: '🦅', name: 'タカ', partner: 'm12', exp: '「タカ」は とても めが よくて、そらから「ヘビ」を みつけて つかまえるよ。' },
+                    { id: 'm12', emoji: '🐍', name: 'ヘビ', partner: 'm11', exp: '「ヘビ」は カエルや ネズミを たべるけど、「タカ」に たべられてしまう ことも あるんだ。' },
+                    { id: 'm13', emoji: '...<br>🦉', name: 'フクロウ', partner: 'm14', exp: '「フクロウ」は よるに かつどうし、「ネズミ」などを つかまえて たべるよ。' },
+                    { id: 'm14', emoji: '...<br>🐁', name: 'ネズミ', partner: 'm13', exp: '「ネズミ」は「フクロウ」や ヘビ、タカなど、いろいろな どうぶつの ごはんになるんだ。' },
+                    { id: 'm15', emoji: '...<br>🍂', name: 'おちば', partner: 'm16', exp: '「おちば」は「ダンゴムシ」や ミミズに ぶんかいされて、つちの えいように なるよ。' },
+                    { id: 'm16', emoji: '...<br>⚫', name: 'ダンゴムシ', partner: 'm15', exp: '「ダンゴムシ」は「おちば」を たべて、つちを ゆたかに する「おそうじやさん」なんだ。' }
+                ],
+                hard: [
+                    { id: 'h1', emoji: '🍄', name: 'キノコ', partner: 'h2', exp: '「キノコ」や「カビ」は、しんだ きを ぶんかいして、つちに えいようを もどすよ。' },
+                    { id: 'h2', emoji: '...<br>🌲', name: 'しんだ き', partner: 'h1', exp: '「しんだ き」は、「キノコ」や カビ、ムシたちに ぶんかいされて、つちに かえるんだ。' },
+                    { id: 'h3', emoji: '...<br>💧', name: 'みずたまり', partner: 'h4', exp: '「みずたまり」は「ボウフラ」が そだつ ばしょ。これが ないと カは うまれないよ。' },
+                    { id: 'h4', emoji: '...<br>🦟', name: 'ボウフラ', partner: 'h3', exp: '「ボウフラ」は カの あかちゃん。「みずたまり」などの ちいさな みずたまりで そだつよ。' },
+                    { id: 'h5', emoji: '...<br>🐟', name: 'メダカ', partner: 'h6', exp: '「メダカ」は「ボウフラ」を たべてくれる、やくにたつ さかななんだ。' },
+                    { id: 'h6', emoji: '...<br>🦟', name: 'ボウフラ', partner: 'h5', exp: '「ボウフラ」は「メダカ」の ごはんの ひとつだよ。' },
+                    { id: 'h7', emoji: '...<br>☀️', name: 'たいよう', partner: 'h8', exp: '「たいよう」の ひかりは、しょくぶつが「こうごうせい」で えいようを つくるのに ひつなんだ。' },
+                    { id: 'h8', emoji: '🌿', name: 'しょくぶつ', partner: 'h7', exp: '「しょくぶつ」は「たいよう」の ひかりを あびて、みずと くうきの にさんかたんそから えいようを つくるよ。' },
+                    { id: 'h9', emoji: '...<br>🦇', name: 'コウモリ', partner: 'h10', exp: '「コウモリ」は ちょうおんぱを だし、はねかえってきた おとで「ガ」などの ばしょを みつけて つかまえるよ。' },
+                    { id: 'h10', emoji: '...<br>🦋', name: 'ガ', partner: 'h9', exp: 'よるに とぶ「ガ」は、「コウモリ」の ごはんになるんだ。' },
+                    { id: 'h11', emoji: '...<br>💩', name: 'どうぶつのフン', partner: 'h12', exp: '「どうぶつのフン」は、「フンコロガシ」などのムシに ぶんかいされて、つちの えいように なるよ。' },
+                    { id: 'h12', emoji: '...<br>🪲', name: 'フンコロガシ', partner: 'h11', exp: '「フンコロガシ」は「どうぶつのフン」を だんごにして はこび、たべたり たまごを うんだり するよ。' },
+                    { id: 'h13', emoji: '...<br>🌊', name: 'うみ', partner: 'h14', exp: '「うみ」には「サンゴ」が いて、ちいさな さかなたちの かくれがに なっているよ。' },
+                    { id: 'h14', emoji: '...<br>🐠', name: 'ちいさな さかな', partner: 'h13', exp: '「ちいさな さかな」は、「うみ」の なかの サンゴしょうを かくれがにして くらしているよ。' },
+                    { id: 'h15', emoji: '...<br>🦅', name: 'ワシ', partner: 'h16', exp: '「ワシ」は「ウサギ」を つかまえて たべるよ。しぜんの バランスを たもつ やくわりが あるんだ。' },
+                    { id: 'h16', emoji: '...<br>🐇', name: 'ウサギ', partner: 'h15', exp: '「ウサギ」は くさを たべるけど、「ワシ」などの どうぶつに たべられる ことも あるよ。' },
+                    { id: 'h17', emoji: '...<br>🌸', name: 'サクラ', partner: 'h18', exp: '「サクラ」の はなびらが ちると、つぎは「はっぱ」が でてきて、ひかりを あつめるよ。' },
+                    { id: 'h18', emoji: '...<br>🍃', name: 'サクラのはっぱ', partner: 'h17', exp: '「サクラのはっぱ」は、はるに はなが おわった あと、なつの あいだに えいようを つくるんだ。' },
+                    { id: 'h19', emoji: '...<br>🌰', name: 'ドングリ', partner: 'h20', exp: '「ドングリ」は「カシワ」などの きの み。リスや イノシシの たべものに なるよ。' },
+                    { id: 'h20', emoji: '...<br>🌳', name: 'カシワのき', partner: 'h19', exp: '「カシワのき」は、あきに「ドングリ」の みを つけるんだ。' }
+                ]
             };
             
-            const explanations = {
-                'T1': '🐶 イヌは 🦴 ホネが だいすき！',
-                'T2': '🐱 ネコは 🐟 さかなを たべるのが すきだね。',
-                'A': '🐝 ミツバチは 🌸 サクラの みつを もらう かわりに、かふんを はこんで あげるんだ。',
-                'B': '🐸 カエルは こどもの とき 💧 みずべ（いけ や たんぼ）で しか いきられないんだ。',
-                'C': '🦋 アゲハチョウの ようちゅうは、🌿 ミカンや サンショウの なかまの はっぱ しか たべないよ。',
-                'D': '🐞 テントウムシは、しょくぶつの しるを すう 🦠 アブラムシを たべて くれるんだ。',
-                'E': '🐦 とりは 🍒 きの みを たべて、フンと いっしょに とおくまで タネを はこぶんだ。', // ★ アイコン変更
-                'F': '🐟 メダカは 🌾 たんぼ のような、おだやかな ながれの みずが だいすき なんだ。',
-                'G': '🐛 ようちゅうは、さなぎ になって 🦋 すごい かたちに へんしん（へんたい）するんだ。',
-                'H': '🍄 キノコや 🍂 おちばは、つちの えいように なって、あたらしい いのちを そだてるよ。（ぶんかいしゃ）',
-                'I': '🌳 きは ☀️ たいようの ひかりを あびて、じぶんで えいよう（さんそ も）を つくるんだ。（こうごうせい）',
-                'J': '🦇 コウモリは、よるに 🦟 カなどの むしを たくさん たべて くれるんだよ。',
-                'K': '🐌 カタツムリは、やわらかい 🥬 キャベツや アジサイの はが だいすき。',
-                'L': '🦀 カニは 🌊 うみ や かわの みずべに すんでいる なかまが おおいよ。',
-                'M': '🕸️ クモは すを つくって、つかまえた 🪰 ハエなどの むしを たべるんだ。',
-                'N': '🐿️ リスは 🌰 どんぐりなどの きの みを あつめて、ふゆに そなえるんだ。',
-                'O': '🐻 クマは 🍯 ハチミツが だいすき なんだ。ハチに さされないよう きをつけて！',
-                'P': '🐧 ペンギンは うみの なかを およいで 🐠 さかなを つかまえて たべるよ。',
-                'Q': '🪲 フンコロガシは どうぶつの 💩 フンを まるめて、ごはん にしたり タマゴを うんだり するんだ。',
-                'R': '👨‍🌾 ひとは 🍅 やさいや おこめを そだてて たべているね。これも しぜんの つながり！',
-                'S': '🌍 ちきゅうの しげんを まもるため、みんなで ♻️ リサイクル するのも だいじな つながり。',
-                'T': '🏭 こうじょう や くるまの 💨 けむり が ふえすぎると、いきものが すみにくく なってしまうんだ。',
-            };
-
-            const difficultyPairs = {
-                tutorial: ['T1', 'T2'],
-                easy: ['A', 'B', 'C', 'D', 'E', 'F'],
-                medium: ['G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'],
-                hard: ['O', 'P', 'Q', 'R', 'S', 'T', 'C', 'D', 'H', 'I'] // Easy/Mediumと重複しないように調整
-            };
-
-            // コネクトゲーム 状態変数
-            let currentGameCards = [];
-            let flippedCards = [];
+            let firstCard = null;
+            let secondCard = null;
+            let lockBoard = false; // カード操作をロック
+            let pairsToMatch = 0;
             let matchedPairs = 0;
-            let totalPairs = 0;
             let timerInterval = null;
-            let secondsElapsed = 0;
-            let isChecking = false;
-            let currentDifficulty = 'easy';
-            let usedExplanations = {};
-            let consecutiveMistakes = 0; 
+            let seconds = 0;
+            let currentDifficulty = '';
+            let currentExplanations = [];
+            let wrongStreak = 0; // ★ 不正解カウント
+
+            // ★ ランキング取得
+            function getRanking(difficulty) {
+                const rankings = JSON.parse(localStorage.getItem(RANKING_KEY)) || {};
+                return rankings[difficulty] || [];
+            }
+            // ★ ランキング表示
+            function displayRanking() {
+                const difficulties = ['easy', 'medium', 'hard'];
+                difficulties.forEach(diff => {
+                    const rankingList = document.getElementById(`ranking-list-${diff}`);
+                    rankingList.innerHTML = '';
+                    const rankings = getRanking(diff);
+                    if (rankings.length === 0) {
+                        rankingList.innerHTML = '<li class="text-gray-500 italic p-2">まだ きろくが ありません</li>';
+                    } else {
+                        rankings.forEach((rank, index) => {
+                            const li = document.createElement('li');
+                            li.innerHTML = `<span class="rank-name">${index + 1}. ${rank.name}</span> <span class="rank-time">${rank.time} びょう</span>`;
+                            rankingList.appendChild(li);
+                        });
+                    }
+                });
+            }
 
             // ゲーム初期化
             function initConnectGame(difficulty) {
                 currentDifficulty = difficulty;
+                currentExplanations = [];
+                connectGameDoms.board.innerHTML = '';
+                connectGameDoms.board.className = 'grid gap-2 sm:gap-4'; // クラスリセット
+                connectGameDoms.board.classList.add(`grid-${difficulty}`);
+                
+                firstCard = null;
+                secondCard = null;
+                lockBoard = false;
                 matchedPairs = 0;
-                secondsElapsed = 0;
-                flippedCards = [];
-                isChecking = false;
-                usedExplanations = {};
-                consecutiveMistakes = 0;
+                wrongStreak = 0;
                 
-                const gamePairIds = difficultyPairs[difficulty];
-                totalPairs = gamePairIds.length;
-                connectDoms.pairsLeftEl.textContent = totalPairs;
+                let cardsData = [];
+                if (difficulty === 'tutorial') {
+                    cardsData = [...allPairs.tutorial];
+                } else if (difficulty === 'easy') {
+                    cardsData = [...allPairs.easy];
+                } else if (difficulty === 'medium') {
+                    cardsData = [...allPairs.medium];
+                } else if (difficulty === 'hard') {
+                    cardsData = [...allPairs.hard];
+                }
                 
-                currentGameCards = [];
-                gamePairIds.forEach(id => {
-                    if (allPairs[id] && explanations[id]) {
-                        usedExplanations[id] = explanations[id];
-                        const pair = allPairs[id];
-                        currentGameCards.push({ pairId: id, emoji: pair[0].emoji, name: pair[0].name });
-                        currentGameCards.push({ pairId: id, emoji: pair[1].emoji, name: pair[1].name });
-                    }
-                });
+                pairsToMatch = cardsData.length / 2;
+                connectGameDoms.pairsLeft.textContent = pairsToMatch;
 
-                currentGameCards = shuffleArray(currentGameCards);
-                createConnectBoard();
+                const shuffledCards = shuffleArray(cardsData);
+                createBoard(shuffledCards);
                 
                 showScreen('connectGame');
-                startConnectTimer();
-                playBGM(); // ★ BGM再生
+                startConnectTimer(false); // タイマーを新規開始
             }
-
+            
+            // 配列シャッフル (Fisher-Yates)
             function shuffleArray(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -837,507 +972,427 @@
                 return array;
             }
 
-            function createConnectBoard() {
-                connectDoms.gameBoard.innerHTML = '';
-                connectDoms.gameBoard.className = `grid gap-2 sm:gap-4 grid-${currentDifficulty}`;
-                
-                currentGameCards.forEach((cardData, index) => {
+            // ボード作成
+            function createBoard(cardsData) {
+                cardsData.forEach(cardData => {
                     const card = document.createElement('div');
-                    card.className = 'card';
-                    card.dataset.id = index;
-                    card.dataset.pairId = cardData.pairId;
-                    
-                    // カードの絵文字サイズを動的に調整
-                    let fontSize = '2.5rem';
-                    if (cardData.emoji.length > 1) fontSize = '1.8rem';
-                    if (window.innerWidth < 640) {
-                        fontSize = cardData.emoji.length > 1 ? '1.5rem' : '2rem';
-                    }
+                    card.classList.add('card');
+                    card.dataset.id = cardData.id;
+                    card.dataset.partner = cardData.partner;
+                    card.dataset.name = cardData.name;
+                    card.dataset.emoji = cardData.emoji;
+                    card.dataset.exp = cardData.exp;
 
                     card.innerHTML = `
                         <div class="card-inner">
-                            <div class="card-face card-back">🌿</div>
-                            <div class="card-face card-front" style="font-size: ${fontSize};">
-                                ${cardData.emoji}
-                            </div>
+                            <div class="card-face card-back">🤝</div>
+                            <div class="card-face card-front">${cardData.emoji}</div>
                         </div>
                     `;
-                    card.addEventListener('click', handleCardClick);
-                    connectDoms.gameBoard.appendChild(card);
+                    card.addEventListener('click', () => handleCardClick(card));
+                    connectGameDoms.board.appendChild(card);
                 });
             }
 
-            function handleCardClick(event) {
-                if (isChecking) return;
-                const clickedCard = event.currentTarget;
-                if (clickedCard.classList.contains('is-flipped') || clickedCard.classList.contains('is-matched')) {
+            // カードクリック処理
+            function handleCardClick(clickedCard) {
+                if (lockBoard || clickedCard === firstCard || clickedCard.classList.contains('is-matched')) {
                     return;
                 }
                 
                 clickedCard.classList.add('is-flipped');
-                flippedCards.push(clickedCard);
-                
-                if (flippedCards.length === 2) {
-                    isChecking = true; // 2枚めくったらチェック開始
-                    setTimeout(checkConnectMatch, 800); // 800ms 待ってから判定
+
+                if (!firstCard) {
+                    firstCard = clickedCard;
+                    return;
                 }
+
+                secondCard = clickedCard;
+                lockBoard = true; // 2枚めくったらロック
+                
+                // ★ 少し待ってから判定
+                setTimeout(checkForMatch, 500);
             }
 
-            // 解説モーダル表示
-            function showExplanationModal(text, callback) {
-                stopConnectTimer(); // タイマー停止
-                explanationText.textContent = text;
-                explanationModal.style.display = 'flex';
+            // ペア判定
+            function checkForMatch() {
+                const isMatch = firstCard.dataset.id === secondCard.dataset.partner;
                 
-                // 「つぎへ」ボタンのリスナー
-                explanationCloseBtn.onclick = () => {
-                    explanationModal.style.display = 'none';
-                    callback(); // コールバック実行
-                };
-            }
-
-            function checkConnectMatch() {
-                const [card1, card2] = flippedCards;
-                const pairId1 = card1.dataset.pairId;
-                const pairId2 = card2.dataset.pairId;
-                
-                if (pairId1 === pairId2) {
-                    // --- マッチした ---
-                    consecutiveMistakes = 0; // ミスカウントリセット
-                    const explanation = explanations[pairId1] || 'すごいね！';
+                if (isMatch) {
+                    // ★ 正解時
+                    wrongStreak = 0; // 不正解カウントリセット
+                    showSimpleModal('success', 'せいかい！', 500); // すぐ消す
                     
-                    showExplanationModal(explanation, () => {
-                        // マッチ処理の続き
-                        flippedCards.forEach(card => card.classList.add('is-matched'));
-                        matchedPairs++;
-                        connectDoms.pairsLeftEl.textContent = totalPairs - matchedPairs;
-                        
-                        flippedCards = [];
-                        isChecking = false;
-                        
-                        // ゲームクリアかチェック
-                        if (matchedPairs === totalPairs) {
-                            endConnectGame(true);
-                        } else {
-                            startConnectTimer(); // ゲームが続くならタイマー再開
-                        }
-                    });
+                    // ★ すぐに解説表示
+                    const exp1 = `<b>${firstCard.dataset.name} (${firstCard.dataset.emoji})</b>:<br>${firstCard.dataset.exp}`;
+                    const exp2 = `<b>${secondCard.dataset.name} (${secondCard.dataset.emoji})</b>:<br>${secondCard.dataset.exp}`;
+                    // ペアの解説をキューに入れる
+                    currentExplanations.push({exp1, exp2});
+                    
+                    // 0.5秒待ってから解説モーダル表示
+                    setTimeout(showNextExplanation, 500);
                     
                 } else {
-                    // --- マッチしなかった ---
-                    consecutiveMistakes++;
-                    // 簡易モーダル表示（時間は 800ms）
-                    showSimpleModal('ざんねん...', 'error'); 
+                    // ★ 不正解時
+                    wrongStreak++;
+                    showSimpleModal('error', 'ざんねん…'); // 0.8秒表示
+                    // 0.8秒待ってから裏返す
+                    setTimeout(unflipCards, 800);
                     
-                    setTimeout(() => {
-                        card1.classList.remove('is-flipped');
-                        card2.classList.remove('is-flipped');
-                        flippedCards = [];
-                        isChecking = false;
-                        
-                        // ヒントチェック
-                        if (consecutiveMistakes >= 5) {
-                            showHint();
-                            consecutiveMistakes = 0;
-                        }
-                    }, 800); // 800ms 待ってから
+                    // ★ 5回連続で間違えたらヒント
+                    if (wrongStreak >= 5) {
+                        wrongStreak = 0;
+                        setTimeout(showHint, 1000); // 1秒後
+                    }
                 }
             }
             
-            // ヒント機能
+            // ★ 解説モーダルを順次表示
+            function showNextExplanation() {
+                if (currentExplanations.length > 0) {
+                    const pairExp = currentExplanations.shift(); // 最初の解説を取り出す
+                    explanationText.innerHTML = `${pairExp.exp1}<br><br>${pairExp.exp2}`;
+                    explanationModalOverlay.style.display = 'flex';
+                } else {
+                    // すべての解説が終わったら
+                    // マッチしたカードを非表示にし、リセット
+                    firstCard.classList.add('is-matched');
+                    secondCard.classList.add('is-matched');
+                    matchedPairs++;
+                    connectGameDoms.pairsLeft.textContent = pairsToMatch - matchedPairs;
+                    resetBoard();
+                    
+                    // 全ペア揃ったらゲーム終了
+                    if (matchedPairs === pairsToMatch) {
+                        setTimeout(showConnectResult, 500);
+                    }
+                }
+            }
+            
+            // 解説モーダルの閉じるボタン
+            explanationCloseBtn.addEventListener('click', () => {
+                explanationModalOverlay.style.display = 'none';
+                // 次の解説があるか、なければゲームを続行
+                showNextExplanation();
+            });
+
+            // カードを裏返す
+            function unflipCards() {
+                firstCard.classList.remove('is-flipped');
+                secondCard.classList.remove('is-flipped');
+                resetBoard();
+            }
+
+            // ボードリセット
+            function resetBoard() {
+                [firstCard, secondCard] = [null, null];
+                lockBoard = false;
+            }
+
+            // ★ ヒント表示
             function showHint() {
-                showSimpleModal('ヒントだよ！', 'success', 1500);
-                
-                const remainingCards = document.querySelectorAll('#connect-game-board .card:not(.is-matched):not(.is-flipped)');
-                if (remainingCards.length < 2) return;
-
-                // ランダムに1枚選ぶ
-                const hintCard1 = remainingCards[Math.floor(Math.random() * remainingCards.length)];
-                const hintPairId = hintCard1.dataset.pairId;
-                let hintCard2 = null;
-
-                // そのペアを探す
-                remainingCards.forEach(card => {
-                    if (card !== hintCard1 && card.dataset.pairId === hintPairId) {
-                        hintCard2 = card;
+                showSimpleModal('success', 'ヒント！💡', 1500);
+                // まだマッチしていないカードをすべて取得
+                const unmatchedCards = Array.from(document.querySelectorAll('.card:not(.is-matched)'));
+                if (unmatchedCards.length > 0) {
+                    // ランダムに1枚選ぶ
+                    const hintCard1 = unmatchedCards[Math.floor(Math.random() * unmatchedCards.length)];
+                    // そのパートナーを探す
+                    const partnerId = hintCard1.dataset.partner;
+                    const hintCard2 = document.querySelector(`.card[data-id="${partnerId}"]`);
+                    
+                    if (hintCard2) {
+                        // 2枚のカードを光らせる
+                        hintCard1.classList.add('is-hinting');
+                        hintCard2.classList.add('is-hinting');
+                        setTimeout(() => {
+                            hintCard1.classList.remove('is-hinting');
+                            hintCard2.classList.remove('is-hinting');
+                        }, 1500); // 1.5秒光らせる
                     }
-                });
-
-                if (hintCard2) {
-                    hintCard1.classList.add('is-hinting');
-                    hintCard2.classList.add('is-hinting');
-                    setTimeout(() => {
-                        hintCard1.classList.remove('is-hinting');
-                        hintCard2.classList.remove('is-hinting');
-                    }, 1500); // 1.5秒点滅
                 }
             }
 
-            function endConnectGame(isClear) {
+            // 結果表示
+            function showConnectResult() {
                 stopConnectTimer();
+                showScreen('connectResult');
                 
-                if (isClear) {
-                    // ★ ランクインチェック
-                    const didRankIn = checkRanking(currentDifficulty, secondsElapsed);
-                    
-                    if (didRankIn) {
-                        showRankingInputModal(currentDifficulty, secondsElapsed);
-                    } else {
-                        // ランクインしなかった場合、通常の結果画面
-                        showScreen('connectResult');
-                        connectDoms.resultTitle.textContent = 'クリア！';
-                        connectDoms.resultTitle.className = 'text-5xl font-extrabold text-yellow-500 mb-4';
-                        connectDoms.resultTime.textContent = `かかったじかん: ${secondsElapsed} びょう`;
-                        displayConnectExplanations();
+                const timeTaken = seconds;
+                connectGameDoms.resultTitle.textContent = 'クリア！🎉';
+                connectGameDoms.resultTime.textContent = `かかったじかん: ${timeTaken} びょう`;
+                
+                // 解説エリアの生成
+                connectGameDoms.explanationArea.innerHTML = '';
+                const allCardsData = allPairs[currentDifficulty];
+                const explanationsToShow = [];
+                // 偶数インデックス（ペアの片方）だけループ
+                for (let i = 0; i < allCardsData.length; i += 2) {
+                    const card1 = allCardsData[i];
+                    const card2 = allPairs[currentDifficulty].find(c => c.id === card1.partner);
+                    if (card2) {
+                        const expHtml = `
+                            <div class="p-3 bg-white rounded-lg shadow-sm border border-gray-200">
+                                <b>${card1.name} (${card1.emoji}) 🤝 ${card2.name} (${card2.emoji})</b><br>
+                                <span class="text-sm text-gray-700">${card1.exp}</span>
+                            </div>
+                        `;
+                        explanationsToShow.push(expHtml);
                     }
                 }
-            }
+                connectGameDoms.explanationArea.innerHTML = explanationsToShow.join('');
 
-            // ★ ランクインチェック関数
-            function checkRanking(difficulty, time) {
-                if (difficulty === 'tutorial') {
-                    return false; // おためしは登録しない
+                // チュートリアル以外ならランキングチェック
+                if (currentDifficulty !== 'tutorial') {
+                    checkRanking(timeTaken, currentDifficulty);
                 }
-                const rank = getRanking(difficulty);
-                if (rank.length < 10) {
-                    return true; // 10人未満ならランクイン
+            }
+
+            // ★ ランキングチェック
+            function checkRanking(time, difficulty) {
+                const rankings = getRanking(difficulty);
+                if (rankings.length < 10 || time < rankings[rankings.length - 1].time) {
+                    // ランクイン
+                    rankingModalTime.textContent = `タイム: ${time} びょう`;
+                    rankingModalOverlay.style.display = 'flex';
                 }
-                // 10位のタイムより早ければランクイン
-                return time < rank[rank.length - 1].time;
             }
 
-            // ★ ランクイン入力モーダル表示
-            function showRankingInputModal(difficulty, time) {
-                rankingModalTime.textContent = `タイム: ${time} びょう`;
-                playerNameInput.value = ''; // 入力欄をクリア
-                rankingModalOverlay.style.display = 'flex';
-
-                // 登録ボタンのリスナー（一度だけ設定）
-                rankingSubmitBtn.onclick = () => {
-                    let name = playerNameInput.value.trim();
-                    if (name === '') {
-                        name = 'ななしさん';
-                    }
-                    name = name.slice(0, 8); // 8文字に制限
-                    
-                    saveRanking(difficulty, name, time);
-                    
-                    rankingModalOverlay.style.display = 'none';
-                    
-                    // 結果画面を表示
-                    showScreen('connectResult');
-                    connectDoms.resultTitle.textContent = 'クリア！';
-                    connectDoms.resultTime.textContent = `かかったじかん: ${secondsElapsed} びょう (とうろくしたよ！)`;
-                    displayConnectExplanations();
-
-                    // スタート画面のランキングを更新
-                    displayRanking();
-                };
+            // ★ ランキング保存
+            function saveRanking(name, time, difficulty) {
+                const allRankings = JSON.parse(localStorage.getItem(RANKING_KEY)) || {};
+                const rankings = allRankings[difficulty] || [];
+                
+                const newScore = { name: name || 'ななしさん', time: time };
+                rankings.push(newScore);
+                
+                // タイムで昇順ソート
+                rankings.sort((a, b) => a.time - b.time);
+                
+                // 10位まで保持
+                allRankings[difficulty] = rankings.slice(0, 10);
+                
+                localStorage.setItem(RANKING_KEY, JSON.stringify(allRankings));
             }
 
-            function displayConnectExplanations() {
-                connectDoms.explanationArea.innerHTML = '';
-                Object.values(usedExplanations).forEach(text => {
-                    const p = document.createElement('p');
-                    p.textContent = text;
-                    connectDoms.explanationArea.appendChild(p);
-                });
+            // ★ ランキング登録処理
+            function handleRankingSubmit() {
+                const name = playerNameInput.value;
+                const time = seconds;
+                
+                if (!name || name.trim() === '') {
+                    // ★ 修正: 'break;' は無効。'return;' を使い、フィードバックを追加。
+                    playerNameInput.classList.add('is-invalid');
+                    setTimeout(() => {
+                        playerNameInput.classList.remove('is-invalid');
+                    }, 500); // 0.5秒後にクラスを削除
+                    return; 
+                }
+
+                saveRanking(name, time, currentDifficulty);
+                rankingModalOverlay.style.display = 'none';
+                playerNameInput.value = '';
+                displayRanking(); // スタート画面のランキングを更新
             }
 
             // タイマー
-            function startConnectTimer() {
-                stopConnectTimer(); // 念のためリセット
+            function startConnectTimer(isResume) {
+                if (!isResume) {
+                    seconds = 0; // 新規スタート
+                }
+                connectGameDoms.timer.textContent = seconds;
+                // 既存のタイマーがあれば停止
+                if(timerInterval) clearInterval(timerInterval);
+                
                 timerInterval = setInterval(() => {
-                    secondsElapsed++;
-                    connectDoms.timerEl.textContent = secondsElapsed;
+                    seconds++;
+                    connectGameDoms.timer.textContent = seconds;
                 }, 1000);
             }
-
             function stopConnectTimer() {
                 clearInterval(timerInterval);
+                timerInterval = null; // タイマーIDをリセット
             }
 
-            // コネクトゲーム リスナー設定
-            connectDoms.difficultyButtons.forEach(button => {
+            // --- コネクトゲーム リスナー ---
+            document.querySelectorAll('.difficulty-btn').forEach(button => {
                 button.addEventListener('click', () => {
                     initConnectGame(button.dataset.difficulty);
                 });
             });
-            connectDoms.restartButton.addEventListener('click', () => {
-                // ★ スタート画面に戻る前にランキングを再表示
-                displayRanking();
+            rankingSubmitBtn.addEventListener('click', handleRankingSubmit);
+            connectGameDoms.restartBtn.addEventListener('click', () => {
                 showScreen('connectStart');
-                pauseBGM(); // ★ BGM停止 (スタート画面に戻るため)
             });
-            // ★ おわるボタン リスナー
-            connectDoms.quitButton.addEventListener('click', () => {
-                stopConnectTimer(); // ゲームを一時停止
-                pauseBGM(); // ★ BGM一時停止
+            // ★ おわるボタン
+            connectGameDoms.quitGameBtn.addEventListener('click', () => {
+                confirmModalTarget = 'connectGame';
                 confirmModalOverlay.style.display = 'flex';
+                pauseBGM(); // 確認中はBGM停止
+                stopConnectTimer(); // 確認中はタイマー停止
             });
 
-
-            // --- 2. いきもの さがし (かくれんぼ) ---
-            
-            // さがしゲーム DOM
-            const findDoms = {
-                targetList: document.getElementById('find-game-targets'),
-                gameArea: document.getElementById('find-game-area'),
-                svgCanvas: document.getElementById('find-game-svg'),
+            // --- 2. いきもの かくれんぼ ---
+            const findGameDoms = {
+                targets: document.getElementById('find-game-targets'),
+                svg: document.getElementById('find-game-svg'),
                 resultTitle: document.getElementById('find-result-title'),
                 resultMsg: document.getElementById('find-result-message'),
-                explanationArea: document.getElementById('find-explanation-area'),
+                expArea: document.getElementById('find-explanation-area'),
                 restartBtn: document.getElementById('find-restart-button'),
                 backBtn: document.getElementById('find-back-button'),
-                quitButton: document.getElementById('find-quit-game'), // ★ 追加
+                quitGameBtn: document.getElementById('find-quit-game'),
             };
 
-            const SVG_NS = "http://www.w3.org/2000/svg";
-
-            // さがしゲーム データ (保護色テーマ)
-            const findGameData = [
-                { 
-                    id: 'A', name: 'ナナフシ', hint: 'ほそながい えだ？', 
-                    explanation: 'せいかい！これは ナナフシ だよ。ほそい えだ に そっくりで、てき から みつかりにくいんだ。',
-                    draw: (svg) => {
-                        const el = document.createElementNS(SVG_NS, 'line');
-                        el.setAttribute('x1', '120'); el.setAttribute('y1', '110');
-                        el.setAttribute('x2', '180'); el.setAttribute('y2', '125');
-                        el.setAttribute('stroke', '#755C48'); // 背景の木(#8B4513)より少し明るい
-                        el.setAttribute('stroke-width', '4');
-                        return el;
-                    }
-                },
-                { 
-                    id: 'B', name: 'カエル', hint: 'くさ と おなじ いろ',
-                    explanation: 'みつけた！ アマガエル だね。くさむら と おなじ みどりいろ で かくれているんだ。',
-                    draw: (svg) => {
-                        const el = document.createElementNS(SVG_NS, 'circle');
-                        el.setAttribute('cx', '50'); el.setAttribute('cy', '270');
-                        el.setAttribute('r', '7');
-                        el.setAttribute('fill', '#34A153'); // 背景の草(#2E8B57)より少し明るい
-                        return el;
-                    }
-                },
-                {
-                    id: 'C', name: 'コノハチョウ', hint: 'かれた はっぱ？',
-                    explanation: 'すごい！ コノハチョウ だ！はねを とじると、かれた はっぱ に そっくりだね。',
-                    draw: (svg) => {
-                        const el = document.createElementNS(SVG_NS, 'path');
-                        el.setAttribute('d', 'M330 230 L350 250 L335 260 L330 230 Z');
-                        el.setAttribute('fill', '#A0522D'); // 茶色
-                        return el;
-                    }
-                },
-                {
-                    id: 'D', name: 'バッタ', hint: 'みどり の くさばね',
-                    explanation: 'やったね！ バッタ だ！みどりいろの からだは、くさむら に まぎれるのに ぴったり！',
-                    draw: (svg) => {
-                        const el = document.createElementNS(SVG_NS, 'ellipse');
-                        el.setAttribute('cx', '250'); el.setAttribute('cy', '280');
-                        el.setAttribute('rx', '10'); el.setAttribute('ry', '3');
-                        el.setAttribute('fill', '#559E2B'); // 背景の草(#228B22)より明るい
-                        el.setAttribute('transform', 'rotate(-30 250 280)');
-                        return el;
-                    }
-                },
-                {
-                    id: 'E', name: 'モンシロチョウ', hint: 'しろい はな？',
-                    explanation: 'せいかい！ モンシロチョウ だよ。しろい はな の ちかく にいると みつかりにくいね。',
-                    draw: (svg) => {
-                        const el = document.createElementNS(SVG_NS, 'path');
-                        el.setAttribute('d', 'M150 50 Q 155 45 160 50 L 155 55 Z M 155 55 L 160 60 Q 155 65 150 60 Z');
-                        el.setAttribute('fill', '#F0F0F0'); // 白
-                        return el;
-                    }
-                },
-            ];
-            
-            // SVG背景 (より複雑に)
-            const findGameBG = `
-                <!-- そら -->
-                <rect width="400" height="200" fill="#87CEEB"></rect>
-                <!-- たいよう -->
-                <circle cx="350" cy="50" r="30" fill="#FFD700"></circle>
-                <!-- くも -->
-                <circle cx="150" cy="50" r="15" fill="#FFFFFF"></circle>
-                <circle cx="165" cy="50" r="15" fill="#FFFFFF"></circle>
-                <circle cx="158" cy="40" r="15" fill="#FFFFFF"></circle>
-                <!-- じめん（おく） -->
-                <rect y="190" width="400" height="110" fill="#228B22"></rect>
-                <!-- じめん（てまえ） -->
-                <path d="M 0 300 C 50 280, 150 280, 200 290 S 300 310, 400 290 V 300 H 0 Z" fill="#2E8B57" />
-                <!-- き（みき） -->
-                <rect x="100" y="100" width="30" height="100" fill="#8B4513"></rect>
-                <!-- き（はっぱ） -->
-                <circle cx="115" cy="80" r="40" fill="#006400"></circle>
-                <circle cx="95" cy="100" r="35" fill="#006400"></circle>
-                <circle cx="135" cy="100" r="35" fill="#006400"></circle>
-                <!-- くさむら -->
-                <circle cx="40" cy="275" r="20" fill="#2E8B57"></circle>
-                <circle cx="60" cy="280" r="25" fill="#2E8B57"></circle>
-                <circle cx="240" cy="285" r="30" fill="#228B22"></circle>
-                <circle cx="260" cy="280" r="25" fill="#228B22"></circle>
-                <!-- かれは（おちば） -->
-                <path d="M320 240 L340 260 L325 270 L320 240 Z" fill="#A0522D" opacity="0.5"></path>
-            `;
-
-            // さがしゲーム 状態変数
-            let findGameTargets = [];
-            let foundTargetsCount = 0;
-            let findGameExplanations = {};
+            const findGameData = {
+                // 背景
+                background: `<rect width="400" height="300" fill="#228B22" />` + // 森
+                            `<rect width="400" height="150" y="150" fill="#8FBC8F" />` + // 草むら
+                            `<path d="M50 150 Q 80 100 100 150 T 150 150 T 200 150 T 250 150 T 300 150 T 350 150" fill="none" stroke="#556B2F" stroke-width="2" />` + // つる
+                            `<circle cx="350" cy="50" r="30" fill="#FFD700" />`, // 太陽
+                // 探すいきもの
+                animals: [
+                    { id: 'nanafu', name: 'ナナフシ', hint: 'えだ？ いいえ、ムシです', exp: '「ナナフシ」は、ほそながい からだで きの えだに そっくり！てきから みを まもるよ。（ぎたい）', svg: `<path d="M100 120 L140 130 M110 123 L115 115 M130 127 L135 120" stroke="#8B4513" stroke-width="4" transform="rotate(15 120 125)" class="target-animal" />`},
+                    { id: 'cho', name: 'コノハチョウ', hint: 'かれた はっぱ？', exp: '「コノハチョウ」は、はねを とじると まるで かれは！てきを あざむくよ。（ぎたい）', svg: `<path d="M200 200 Q 220 180 230 200 Q 220 220 200 200 M230 200 Q 240 180 250 200 Q 240 220 230 200" fill="#A0522D" transform="rotate(-30 225 200)" class="target-animal" />`},
+                    { id: 'batta', name: 'バッタ', hint: 'くさと おなじ いろ', exp: '「バッタ」は くさむらと おなじ みどりいろ。てきに みつかり にくいね。（ほごしょく）', svg: `<path d="M280 250 Q 290 240 300 250 L 295 255 L 300 260 Q 290 250 280 250 M 285 245 L 290 240" fill="#32CD32" stroke="#2E8B57" stroke-width="1" class="target-animal" />`},
+                    { id: 'ga', name: 'ガ (せいちゅう)', hint: 'きの みきに とまってる', exp: '「ガ」の なかまは、きの みきや かれはに にた もようの はねを もつよ。（ほごしょく）', svg: `<path d="M80 50 L100 60 L80 70 Q 70 60 80 50" fill="#A9A9A9" transform="rotate(90 80 60)" class="target-animal" />`},
+                    { id: 'imomushi', name: 'イモムシ', hint: 'はっぱと おなじ いろ', exp: '「イモムシ」は、じぶんが たべる はっぱと おなじ みどりいろ。とりから みを まもるよ。（ほごしょく）', svg: `<path d="M140 150 Q 145 145 150 150 Q 155 145 160 150 Q 165 145 170 150" fill="none" stroke="#7CFC00" stroke-width="5" class="target-animal" />`},
+                ],
+                foundCount: 0
+            };
 
             function initFindGame() {
-                findGameTargets = shuffleArray([...findGameData]);
-                foundTargetsCount = 0;
-                findGameExplanations = {}; // 解説リストをリセット
+                findGameDoms.svg.innerHTML = findGameData.background;
+                findGameDoms.targets.innerHTML = `<h3 class="font-bold text-gray-700">さがしてみよう:</h3>`; // リセット
                 
-                updateTargetList();
-                placeAnimals();
+                findGameData.foundCount = 0;
+                const shuffledAnimals = shuffleArray([...findGameData.animals]); // 毎回配置をシャッフル
+
+                shuffledAnimals.forEach(animal => {
+                    // 1. リストに追加
+                    const targetItem = document.createElement('div');
+                    targetItem.id = `target-${animal.id}`;
+                    targetItem.className = 'target-item';
+                    targetItem.textContent = `・ ${animal.hint}`;
+                    findGameDoms.targets.appendChild(targetItem);
+                    
+                    // 2. SVGに追加
+                    findGameDoms.svg.innerHTML += animal.svg;
+                });
+                
+                // 3. おわるボタンを追加
+                findGameDoms.targets.appendChild(findGameDoms.quitGameBtn);
+
+                // 4. SVG内の動物にクリックイベント設定
+                findGameDoms.svg.querySelectorAll('.target-animal').forEach((animalEl, index) => {
+                    // SVGに追加した順（＝shuffledAnimalsの順）にデータを取得
+                    const animalData = shuffledAnimals[index]; 
+                    
+                    // animalData.id を使って、元の animals 配列から正しいデータを引き当てる
+                    // (シャッフルされているため、インデックスではなくidで照合する)
+                    const correctAnimalData = findGameData.animals.find(a => a.id === animalData.id);
+
+                    if (correctAnimalData) {
+                        animalEl.dataset.id = correctAnimalData.id;
+                        animalEl.dataset.name = correctAnimalData.name;
+                        animalEl.dataset.exp = correctAnimalData.exp;
+                        
+                        animalEl.addEventListener('click', handleAnimalClick);
+                    }
+                });
+                
                 showScreen('findGame');
-                playBGM(); // ★ BGM再生
             }
-            
-            // 探すリストをUIに表示
-            function updateTargetList(foundId = null) {
-                if (foundId === null) {
-                    // おわるボタンがあるので、innerHTMLの全消しはしない
-                    // 既存の .target-item を削除
-                    findDoms.targetList.querySelectorAll('.target-item').forEach(item => item.remove());
-                    
-                    findGameTargets.forEach(target => {
-                        const item = document.createElement('span');
-                        item.id = `target-item-${target.id}`;
-                        item.className = 'target-item';
-                        item.textContent = `❓ ${target.hint}`; // ヒントを表示
-                        findDoms.targetList.appendChild(item);
-                    });
-                } else {
-                    const item = document.getElementById(`target-item-${foundId}`);
-                    const target = findGameTargets.find(t => t.id === foundId);
-                    if (item && target) {
-                        item.classList.add('is-found');
-                        item.textContent = `⭕ ${target.name}`; // 見つけたら名前に変更
-                    }
+
+            function handleAnimalClick(event) {
+                const clickedAnimal = event.currentTarget;
+                if (clickedAnimal.classList.contains('is-found')) return;
+
+                clickedAnimal.classList.add('is-found');
+                findGameData.foundCount++;
+                
+                const id = clickedAnimal.dataset.id;
+                const name = clickedAnimal.dataset.name;
+                const exp = clickedAnimal.dataset.exp;
+                
+                // 1. リストを更新
+                document.getElementById(`target-${id}`).classList.add('is-found');
+                
+                // 2. 解説をモーダルで表示
+                explanationText.innerHTML = `<b>${name} を みつけた！</b><br><br>${exp}`;
+                explanationModalOverlay.style.display = 'flex';
+                // ★ 解説モーダルの閉じるボタンは「showNextExplanation」ではなく、
+                //    単純に閉じるだけにする（イベントリスナーは共通）
+                //    → コネクトゲーム側で showNextExplanation を設定しているので
+                //      ここでは何もしなくても大丈夫。
+
+                // 3. 全部見つけたら結果表示
+                if (findGameData.foundCount === findGameData.animals.length) {
+                    setTimeout(showFindResult, 800); // 解説閉じた後くらい
                 }
             }
             
-            // 動物を配置
-            function placeAnimals() {
-                findDoms.svgCanvas.innerHTML = findGameBG; // 背景をリセット
-                
-                findGameTargets.forEach(animal => {
-                    const el = animal.draw(findDoms.svgCanvas); // 描画関数を呼び出し
-                    el.classList.add('target-animal');
-                    el.dataset.targetId = animal.id;
-                    
-                    el.addEventListener('click', handleTargetClick);
-                    findDoms.svgCanvas.appendChild(el);
-                });
-            }
-            
-            // 動物クリック処理
-            function handleTargetClick(e) {
-                e.stopPropagation(); // SVGの親へのイベント伝播を停止
-                const clickedEl = e.currentTarget;
-                if (clickedEl.classList.contains('is-found')) return;
-                
-                const id = clickedEl.dataset.targetId;
-                const target = findGameTargets.find(t => t.id === id);
-                if (!target) return;
-
-                // 解説を保存
-                findGameExplanations[id] = target.explanation;
-
-                // 解説モーダルを表示
-                showExplanationModal(target.explanation, () => {
-                    clickedEl.classList.add('is-found');
-                    foundTargetsCount++;
-                    updateTargetList(id); // UIのリストにチェックマーク
-                    
-                    if (foundTargetsCount === findGameTargets.length) {
-                        setTimeout(() => {
-                            endFindGame();
-                        }, 500); // 少し待ってから結果画面へ
-                    }
-                });
-            }
-
-            // さがしゲーム終了処理
-            function endFindGame() {
+            function showFindResult() {
                 showScreen('findResult');
-                // 解説一覧を表示
-                findDoms.explanationArea.innerHTML = '';
-                findGameTargets.forEach(target => {
-                    const p = document.createElement('p');
-
-                    // XSS対策 (簡易)
-                    const safeExplanation = document.createTextNode(findGameExplanations[target.id] || 'みつけたね！').textContent;
-                    p.textContent = safeExplanation;
-                    findDoms.explanationArea.appendChild(p);
+                
+                // 解説エリアの生成
+                findGameDoms.expArea.innerHTML = '';
+                findGameData.animals.forEach(animal => {
+                    const expHtml = `
+                        <div class="p-3 bg-white rounded-lg shadow-sm border border-gray-200">
+                            <b>${animal.name} (${animal.hint})</b><br>
+                            <span class="text-sm text-gray-700">${animal.exp}</span>
+                        </div>
+                    `;
+                    findGameDoms.expArea.innerHTML += expHtml;
                 });
             }
-            
-            // さがしゲーム リスナー設定
-            findDoms.restartBtn.addEventListener('click', initFindGame);
-            findDoms.backBtn.addEventListener('click', () => {
+
+            // --- さがしゲーム リスナー ---
+            findGameDoms.restartBtn.addEventListener('click', initFindGame);
+            findGameDoms.backBtn.addEventListener('click', () => {
                 showScreen('gameSelect');
-                pauseBGM(); // ★ BGM停止
             });
-            // ★ おわるボタン リスナー
-            findDoms.quitButton.addEventListener('click', () => {
-                pauseBGM(); // ★ BGM一時停止
+            // ★ おわるボタン
+            findGameDoms.quitGameBtn.addEventListener('click', () => {
+                confirmModalTarget = 'findGame';
                 confirmModalOverlay.style.display = 'flex';
+                pauseBGM(); // 確認中はBGM停止
             });
 
-            // --- ★ 共通 確認モーダル リスナー ---
-            confirmCancelBtn.addEventListener('click', () => {
-                confirmModalOverlay.style.display = 'none';
-                // コネクトゲーム中ならタイマー再開
-                if (screens.connectGame.classList.contains('active')) {
-                    startConnectTimer(); 
-                    playBGM(); // ★ BGM再開
-                } else if (screens.findGame.classList.contains('active')) {
-                    playBGM(); // ★ BGM再開
-                }
-            });
-
-            confirmOkBtn.addEventListener('click', () => {
-                confirmModalOverlay.style.display = 'none';
-                stopConnectTimer(); // 念のためタイマー停止
-                pauseBGM(); // ★ BGM停止 (OKボタンなので)
-                
-                // 現在アクティブな画面に応じて戻る
-                if (screens.connectGame.classList.contains('active')) {
-                    displayRanking();
-                    showScreen('connectStart');
-                } else if (screens.findGame.classList.contains('active')) {
-                    showScreen('gameSelect'); // さがしゲームはゲーム選択画面へ
-                }
-            });
-
-            // --- ★ ミュートボタン リスナー (bgMusic を bgm に修正) ---
-            muteToggleBtn.addEventListener('click', () => {
-                bgm.muted = !bgm.muted;
-                if (bgm.muted) {
-                    muteToggleBtn.textContent = 'おと だす🔈';
-                    bgm.pause(); // ミュートしたら停止
+            // --- ★ 設定読み込み関数 (新規追加) ---
+            function loadSettings() {
+                // 音量設定
+                const savedVolume = localStorage.getItem(VOLUME_KEY);
+                if (savedVolume !== null) {
+                    bgm.volume = savedVolume;
+                    volumeSlider.value = savedVolume;
                 } else {
-                    muteToggleBtn.textContent = 'おと けす🔇';
-                    // ゲーム中なら再生
-                    if (screens.connectGame.classList.contains('active') || screens.findGame.classList.contains('active')) {
-                         bgm.play().catch(e => console.log("BGM再生エラー: ", e));
-                    }
+                    bgm.volume = 0.5; // デフォルト音量
+                    volumeSlider.value = 0.5;
                 }
-            });
+
+                // BGM選択設定
+                const savedBGM = localStorage.getItem(BGM_KEY);
+                if (savedBGM) {
+                    bgmSelect.value = savedBGM;
+                    bgm.src = savedBGM;
+                } else {
+                    bgmSelect.value = 'music.mp3'; // デフォルトBGM
+                    bgm.src = 'music.mp3';
+                }
+                
+                // ミュートボタンの初期状態
+                muteToggleBtn.textContent = bgm.muted ? 'BGM 🔇' : 'BGM 🎵';
+            }
+
 
             // --- 初期化 ---
+            loadSettings(); // ★ 設定を読み込む
             displayRanking(); // 起動時に全ランキングを表示
 
         });
     </script>
 </body>
 </html>
-
-
 
