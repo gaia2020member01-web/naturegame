@@ -62,6 +62,62 @@
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
         }
 
+        /* --- ランキング表示 (3カラム) --- */
+        #ranking-section .rank-column h4 {
+            font-size: 1.1rem; /* かんたん/ふつう/むずかしい の文字サイズ */
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 3px solid;
+        }
+        #ranking-section ol {
+            list-style-type: decimal;
+            list-style-position: inside;
+            text-align: left;
+            height: 12rem; /* 192px */
+            overflow-y: auto;
+            background-color: #f9fafb; /* gray-50 */
+            padding: 0.75rem; /* 12px */
+            border-radius: 0.5rem; /* 8px */
+            border: 1px solid #e5e7eb; /* gray-200 */
+        }
+        #ranking-section li {
+            font-size: 0.9rem; /* ランキングの文字サイズ */
+            padding: 0.1rem 0.25rem;
+            border-radius: 4px;
+        }
+        @media (min-width: 640px) {
+             #ranking-section li {
+                font-size: 1rem; /* 16px */
+             }
+        }
+        #ranking-section li:nth-child(odd) {
+            background-color: #ffffff; /* white */
+        }
+        #ranking-section li .rank-name {
+            font-weight: 700;
+            color: #1f2937; /* gray-800 */
+            display: inline-block;
+            max-width: 60%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: bottom;
+        }
+        #ranking-section li .rank-time {
+            float: right;
+            font-weight: 700;
+            color: #1d4ed8; /* blue-700 */
+        }
+        /* 1位 */
+        #ranking-section li:nth-child(1) { 
+            background-color: #fef9c3; /* yellow-100 */
+        }
+        #ranking-section li:nth-child(1) .rank-name {
+            color: #ca8a04; /* yellow-600 */
+        }
+
         /* --- コネクトゲーム（神経衰弱）スタイル --- */
         .card {
             width: 100%;
@@ -177,6 +233,27 @@
             margin-bottom: 24px;
             line-height: 1.6;
         }
+        /* ランクイン入力モーダル */
+        #ranking-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        /* ★ 確認モーダル */
+        #confirm-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
 
         /* --- いきものさがしゲーム スタイル --- */
         #find-game-area {
@@ -220,6 +297,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             max-width: 800px;
             width: 100%;
+            position: relative; /* ★ おわるボタン配置のため */
         }
         .target-item {
             font-size: 1.1rem;
@@ -255,11 +333,16 @@
 </head>
 <body class="bg-gray-50 text-gray-800">
 
+    <!-- ★ BGM用 audio タグ (削除) -->
+    <!-- <audio id="bg-music" src="music.mp3" loop></audio> --> <!-- ★ 削除しました -->
+
     <div id="app">
 
         <!-- 0. ゲーム選択画面 -->
         <div id="game-select-screen" class="screen active">
+             <!-- ★ relative を削除しました -->
             <div class="text-center p-6 bg-white rounded-2xl shadow-xl max-w-lg w-full">
+                <!-- ★ 古いミュートボタンを削除しました -->
                 <h1 class="game-title text-green-700">いきもの ワールド</h1>
                 <p class="game-subtitle">どちらのゲームであそぶ？</p>
                 
@@ -276,9 +359,42 @@
 
         <!-- 1. コネクトゲーム スタート画面 -->
         <div id="connect-start-screen" class="screen">
-            <div class="text-center p-6 bg-white rounded-2xl shadow-xl max-w-lg w-full">
+            <div class="text-center p-6 bg-white rounded-2xl shadow-xl max-w-3xl w-full">
                 <h1 class="game-title text-blue-600">いきものコネクト！</h1>
                 <p class="game-subtitle">みぢかな なかまを みつけよう</p>
+
+                <!-- ★★★ 3カラム ランキング表示エリア ★★★ -->
+                <div id="ranking-section" class="w-full mb-6">
+                    <h3 class="text-2xl font-bold text-gray-700 mb-4">🏆 ランキング 🏆</h3>
+                    <div class="flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0 sm:space-x-4">
+                        
+                        <!-- かんたん -->
+                        <div class="flex-1 rank-column">
+                            <h4 class="text-blue-600 border-blue-500">-- かんたん --</h4>
+                            <ol id="ranking-list-easy">
+                                <!-- JSで挿入 -->
+                            </ol>
+                        </div>
+                        
+                        <!-- ふつう -->
+                        <div class="flex-1 rank-column">
+                            <h4 class="text-yellow-600 border-yellow-500">-- ふつう --</h4>
+                            <ol id="ranking-list-medium">
+                                <!-- JSで挿入 -->
+                            </ol>
+                        </div>
+                        
+                        <!-- むずかしい -->
+                        <div class="flex-1 rank-column">
+                            <h4 class="text-red-600 border-red-500">-- むずかしい --</h4>
+                            <ol id="ranking-list-hard">
+                                <!-- JSで挿入 -->
+                            </ol>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- ★★★ ここまで ★★★ -->
                 
                 <div class="space-y-4">
                     <button data-difficulty="tutorial" class="difficulty-btn game-button bg-green-500 hover:bg-green-600">
@@ -312,6 +428,10 @@
                         <span class="text-lg font-bold text-gray-600">じかん:</span>
                         <span id="timer" class="text-2xl font-extrabold text-red-600">0</span>
                     </div>
+                    <!-- ★ おわるボタン追加 -->
+                    <button id="connect-quit-game" class="text-sm font-bold bg-gray-200 text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-300">
+                        おわる
+                    </button>
                 </div>
 
                 <div id="connect-game-board" class="grid gap-2 sm:gap-4">
@@ -347,6 +467,10 @@
                 
                 <div id="find-game-targets">
                     <!-- さがす対象リストがJSで入ります -->
+                    <!-- ★ おわるボタン追加 -->
+                    <button id="find-quit-game" class="absolute top-2 right-2 text-sm font-bold bg-gray-200 text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-300">
+                        おわる
+                    </button>
                 </div>
                 
                 <div id="find-game-area">
@@ -361,7 +485,7 @@
         <div id="find-result-screen" class="screen">
             <div class="text-center p-6 sm:p-10 bg-white rounded-2xl shadow-xl max-w-2xl w-full">
                 <h2 id="find-result-title" class="text-5xl font-extrabold text-yellow-500 mb-4">ぜんぶ みつけた！</h2>
-                <p id="find-result-message" class="text-2xl text-gray-700 mb-8">すごいね！かんさつ めいじん！</D>
+                <p id="find-result-message" class="text-2xl text-gray-700 mb-8">すごいね！かんさつ めいじん！</p>
                 
                 <div class="explanation-list">
                     <h3>みつけた「かくれんぼ」の ひみつ</h3>
@@ -400,6 +524,37 @@
         </div>
     </div>
 
+    <!-- ランクイン入力モーダル -->
+    <div id="ranking-modal-overlay" class="modal-overlay">
+        <div id="ranking-modal-content">
+            <h2 class="text-3xl font-extrabold text-yellow-500 mb-3">🎉ランクイン！🎉</h2>
+            <p id="ranking-modal-time" class="text-xl text-gray-700 mb-4">タイム: 00 びょう</p>
+            <p class="text-lg text-gray-600 mb-4">10い いない です！<br>なまえを にゅうりょく してください。</p>
+            <input type="text" id="player-name-input" class="w-full p-3 border border-gray-300 rounded-lg text-lg" placeholder="なまえ (8もじ まで)" maxlength="8">
+            <button id="ranking-submit-btn" class="game-button bg-green-500 hover:bg-green-600 mt-5">
+                とうろく
+            </button>
+        </div>
+    </div>
+
+    <!-- ★ ゲーム終了 確認モーダル -->
+    <div id="confirm-modal-overlay" class="modal-overlay">
+        <div id="confirm-modal-content">
+            <h3 class="text-xl font-bold mb-4">ほんとうに おわりますか？</h3>
+            <p class="text-gray-600 mb-6">いまのゲームは きえてしまいます。</p>
+            <div class="flex justify-center space-x-4">
+                <button id="confirm-cancel-btn" class="game-button bg-gray-400 hover:bg-gray-500" style="width: 48%;">つづける</button>
+                <button id="confirm-ok-btn" class="game-button bg-red-500 hover:bg-red-600" style="width: 48%;">おわる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ★ BGM用 (MuteボタンとAudioタグ) -->
+    <button id="mute-toggle-btn" class="fixed bottom-4 right-4 bg-white p-3 rounded-full shadow-lg z-50 text-xl">
+        🎵
+    </button>
+    <audio id="bgm" loop src="music.mp3"></audio>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -414,6 +569,8 @@
                 findResult: document.getElementById('find-result-screen'),
             };
             
+            <!-- ★ 古いBGM関連のDOM取得を削除しました -->
+            
             const simpleModalOverlay = document.getElementById('simple-modal-overlay');
             const simpleModalContent = document.getElementById('simple-modal-content');
             
@@ -422,10 +579,40 @@
             const explanationText = document.getElementById('explanation-text');
             const explanationCloseBtn = document.getElementById('explanation-close-btn');
 
+            // ★ ランキング関連 DOM
+            const rankingModalOverlay = document.getElementById('ranking-modal-overlay');
+            const rankingModalTime = document.getElementById('ranking-modal-time');
+            const playerNameInput = document.getElementById('player-name-input');
+            const rankingSubmitBtn = document.getElementById('ranking-submit-btn');
+
+            // ★ 確認モーダル DOM
+            const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
+            const confirmOkBtn = document.getElementById('confirm-ok-btn');
+            const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+
+            // ★ BGM DOM
+            const bgm = document.getElementById('bgm');
+            const muteToggleBtn = document.getElementById('mute-toggle-btn');
+            
+            // localStorage用キー
+            const RANKING_KEY = 'biodiversityGameRanking';
+
             // 画面切り替え
             function showScreen(screenId) {
                 Object.values(screens).forEach(screen => screen.classList.remove('active'));
                 screens[screenId].classList.add('active');
+
+                <!-- ★ BGM再生/停止 (bgMusic を bgm に修正) -->
+                if (screenId === 'connectGame' || screenId === 'findGame') {
+                    // ゲーム画面で再生
+                    if (!bgm.muted) {
+                        bgm.play().catch(e => console.log("BGM再生エラー: ユーザー操作が必要です。"));
+                    }
+                } else {
+                    // それ以外の画面で停止
+                    bgm.pause();
+                    bgm.currentTime = 0;
+                }
             }
 
             // 簡易モーダル表示（せいかい/ざんねん/ヒント）
@@ -434,18 +621,92 @@
                 simpleModalContent.className = type === 'success' ? 'success' : 'error';
                 simpleModalOverlay.style.display = 'flex';
                 
-                setTimeout(hideSimpleModal, duration);
+                // ★ 変更点: ざんねん の表示時間を 800ms に短縮
+                const actualDuration = (type === 'error') ? 800 : duration;
+                setTimeout(hideSimpleModal, actualDuration);
             }
             
             function hideSimpleModal() {
                 simpleModalOverlay.style.display = 'none';
             }
 
+            // ★ BGM再生/停止/ミュート
+            function playBGM() {
+                if (bgm.paused) {
+                    bgm.play().catch(e => console.log("BGM play failed:", e));
+                }
+            }
+            function pauseBGM() {
+                bgm.pause();
+            }
+            muteToggleBtn.addEventListener('click', () => {
+                bgm.muted = !bgm.muted;
+                muteToggleBtn.textContent = bgm.muted ? '🔇' : '🎵';
+            });
+
             // ゲーム選択ボタンのリスナー
             document.getElementById('select-connect-game').addEventListener('click', () => showScreen('connectStart'));
             document.getElementById('select-find-game').addEventListener('click', () => initFindGame());
-            document.getElementById('connect-back-button').addEventListener('click', () => showScreen('gameSelect'));
+            document.getElementById('connect-back-button').addEventListener('click', () => {
+                showScreen('gameSelect');
+                pauseBGM(); // ★ BGM停止
+            });
 
+
+            // ★ ランキング取得
+            function getRanking(difficulty) {
+                const rankings = JSON.parse(localStorage.getItem(RANKING_KEY) || '{}');
+                return rankings[difficulty] || [];
+            }
+
+            // ★ ランキング保存
+            function saveRanking(difficulty, name, time) {
+                const rankings = JSON.parse(localStorage.getItem(RANKING_KEY) || '{}');
+                const currentRank = rankings[difficulty] || [];
+                
+                currentRank.push({ name: name, time: time });
+                currentRank.sort((a, b) => a.time - b.time); // タイムの昇順でソート
+                
+                rankings[difficulty] = currentRank.slice(0, 10); // 上位10件のみ保存
+                
+                localStorage.setItem(RANKING_KEY, JSON.stringify(rankings));
+            }
+
+            // ★ ランキング表示 (3カラム同時)
+            function displayRanking() {
+                const difficulties = ['easy', 'medium', 'hard'];
+                
+                difficulties.forEach(difficulty => {
+                    const listEl = document.getElementById(`ranking-list-${difficulty}`);
+                    if (!listEl) return; // 要素が存在しない場合はスキップ
+                    
+                    const rankData = getRanking(difficulty);
+                    listEl.innerHTML = ''; // リストをクリア
+
+                    if (rankData.length === 0) {
+                        listEl.innerHTML = '<li class="text-gray-500 text-center" style="list-style-type: none;">まだ とうろく がないよ</li>';
+                        return; // ★★★ 修正: 'continue' を 'return' に変更 (forEach のため)
+                    }
+
+                    rankData.forEach((record, index) => {
+                        const li = document.createElement('li');
+                        // 1位から3位にメダル
+                        let medal = '';
+                        if (index === 0) medal = '🥇 ';
+                        else if (index === 1) medal = '🥈 ';
+                        else if (index === 2) medal = '🥉 ';
+                        
+                        // XSS対策 (簡易)
+                        const safeName = document.createTextNode(record.name).textContent;
+                        
+                        li.innerHTML = `
+                            <span class="rank-name">${medal}${safeName}</span>
+                            <span class="rank-time">${record.time} びょう</span>
+                        `;
+                        listEl.appendChild(li);
+                    });
+                });
+            }
 
             // --- 1. いきものコネクト！ (神経衰弱) ---
 
@@ -459,6 +720,7 @@
                 resultTime: document.getElementById('connect-result-time'),
                 explanationArea: document.getElementById('connect-explanation-area'),
                 restartButton: document.getElementById('connect-restart-button'),
+                quitButton: document.getElementById('connect-quit-game'), // ★ 追加
             };
 
             // コネクトゲーム カードデータ
@@ -471,7 +733,7 @@
                 'B': [{ emoji: '🐸', name: 'カエル' }, { emoji: '💧', name: 'みずべ' }],
                 'C': [{ emoji: '🦋', name: 'アゲハチョウ' }, { emoji: '🌿', name: 'ミカンの は' }],
                 'D': [{ emoji: '🐞', name: 'テントウムシ' }, { emoji: '🦠', name: 'アブラムシ' }],
-                'E': [{ emoji: '🐦', name: 'とり' }, { emoji: '🍓', name: 'きの み' }],
+                'E': [{ emoji: '🐦', name: 'とり' }, { emoji: '🍒', name: 'きの み' }], // ★ アイコン変更
                 'F': [{ emoji: '🐟', name: 'メダカ' }, { emoji: '🌾', name: 'たんぼ' }],
                 // Medium
                 'G': [{ emoji: '🐛', name: 'ようちゅう' }, { emoji: '🦋', name: 'チョウ' }], // 'C' とは別ペア扱い
@@ -487,6 +749,8 @@
                 'P': [{ emoji: '🐧', name: 'ペンギン'}, { emoji: '🐠', name: 'さかな'}],
                 'Q': [{ emoji: '💩', name: 'フン' }, { emoji: '🪲', name: 'フンコロガシ' }],
                 'R': [{ emoji: '👨‍🌾', name: 'ひと' }, { emoji: '🍅', name: 'やさい' }],
+                'S': [{ emoji: '🌍', name: 'ちきゅう'}, { emoji: '♻️', name: 'リサイクル'}], // Hard専用
+                'T': [{ emoji: '🏭', name: 'こうじょう'}, { emoji: '💨', name: 'けむり'}]  // Hard専用
             };
             
             const explanations = {
@@ -496,7 +760,7 @@
                 'B': '🐸 カエルは こどもの とき 💧 みずべ（いけ や たんぼ）で しか いきられないんだ。',
                 'C': '🦋 アゲハチョウの ようちゅうは、🌿 ミカンや サンショウの なかまの はっぱ しか たべないよ。',
                 'D': '🐞 テントウムシは、しょくぶつの しるを すう 🦠 アブラムシを たべて くれるんだ。',
-                'E': '🐦 とりは 🍓 きの みを たべて、フンと いっしょに とおくまで タネを はこぶんだ。',
+                'E': '🐦 とりは 🍒 きの みを たべて、フンと いっしょに とおくまで タネを はこぶんだ。', // ★ アイコン変更
                 'F': '🐟 メダカは 🌾 たんぼ のような、おだやかな ながれの みずが だいすき なんだ。',
                 'G': '🐛 ようちゅうは、さなぎ になって 🦋 すごい かたちに へんしん（へんたい）するんだ。',
                 'H': '🍄 キノコや 🍂 おちばは、つちの えいように なって、あたらしい いのちを そだてるよ。（ぶんかいしゃ）',
@@ -510,13 +774,15 @@
                 'P': '🐧 ペンギンは うみの なかを およいで 🐠 さかなを つかまえて たべるよ。',
                 'Q': '🪲 フンコロガシは どうぶつの 💩 フンを まるめて、ごはん にしたり タマゴを うんだり するんだ。',
                 'R': '👨‍🌾 ひとは 🍅 やさいや おこめを そだてて たべているね。これも しぜんの つながり！',
+                'S': '🌍 ちきゅうの しげんを まもるため、みんなで ♻️ リサイクル するのも だいじな つながり。',
+                'T': '🏭 こうじょう や くるまの 💨 けむり が ふえすぎると、いきものが すみにくく なってしまうんだ。',
             };
 
             const difficultyPairs = {
                 tutorial: ['T1', 'T2'],
                 easy: ['A', 'B', 'C', 'D', 'E', 'F'],
                 medium: ['G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'],
-                hard: ['A', 'D', 'H', 'I', 'J', 'M', 'N', 'O', 'P', 'Q']
+                hard: ['O', 'P', 'Q', 'R', 'S', 'T', 'C', 'D', 'H', 'I'] // Easy/Mediumと重複しないように調整
             };
 
             // コネクトゲーム 状態変数
@@ -560,6 +826,7 @@
                 
                 showScreen('connectGame');
                 startConnectTimer();
+                playBGM(); // ★ BGM再生
             }
 
             function shuffleArray(array) {
@@ -580,10 +847,17 @@
                     card.dataset.id = index;
                     card.dataset.pairId = cardData.pairId;
                     
+                    // カードの絵文字サイズを動的に調整
+                    let fontSize = '2.5rem';
+                    if (cardData.emoji.length > 1) fontSize = '1.8rem';
+                    if (window.innerWidth < 640) {
+                        fontSize = cardData.emoji.length > 1 ? '1.5rem' : '2rem';
+                    }
+
                     card.innerHTML = `
                         <div class="card-inner">
                             <div class="card-face card-back">🌿</div>
-                            <div class="card-face card-front" style="font-size: ${cardData.emoji.length > 1 ? '1.5rem' : '2.5rem'};">
+                            <div class="card-face card-front" style="font-size: ${fontSize};">
                                 ${cardData.emoji}
                             </div>
                         </div>
@@ -652,8 +926,8 @@
                 } else {
                     // --- マッチしなかった ---
                     consecutiveMistakes++;
-                    // ★ 変更点: 表示時間を 800ms に短縮
-                    showSimpleModal('ざんねん...', 'error', 800); 
+                    // 簡易モーダル表示（時間は 800ms）
+                    showSimpleModal('ざんねん...', 'error'); 
                     
                     setTimeout(() => {
                         card1.classList.remove('is-flipped');
@@ -666,8 +940,7 @@
                             showHint();
                             consecutiveMistakes = 0;
                         }
-                    // ★ 変更点: タイムアウトも 800ms に
-                    }, 800); 
+                    }, 800); // 800ms 待ってから
                 }
             }
             
@@ -702,15 +975,64 @@
 
             function endConnectGame(isClear) {
                 stopConnectTimer();
-                showScreen('connectResult');
                 
                 if (isClear) {
-                    connectDoms.resultTitle.textContent = 'クリア！';
-                    connectDoms.resultTitle.className = 'text-5xl font-extrabold text-yellow-500 mb-4';
-                    connectDoms.resultTime.textContent = `かかったじかん: ${secondsElapsed} びょう`;
+                    // ★ ランクインチェック
+                    const didRankIn = checkRanking(currentDifficulty, secondsElapsed);
+                    
+                    if (didRankIn) {
+                        showRankingInputModal(currentDifficulty, secondsElapsed);
+                    } else {
+                        // ランクインしなかった場合、通常の結果画面
+                        showScreen('connectResult');
+                        connectDoms.resultTitle.textContent = 'クリア！';
+                        connectDoms.resultTitle.className = 'text-5xl font-extrabold text-yellow-500 mb-4';
+                        connectDoms.resultTime.textContent = `かかったじかん: ${secondsElapsed} びょう`;
+                        displayConnectExplanations();
+                    }
                 }
-                
-                displayConnectExplanations();
+            }
+
+            // ★ ランクインチェック関数
+            function checkRanking(difficulty, time) {
+                if (difficulty === 'tutorial') {
+                    return false; // おためしは登録しない
+                }
+                const rank = getRanking(difficulty);
+                if (rank.length < 10) {
+                    return true; // 10人未満ならランクイン
+                }
+                // 10位のタイムより早ければランクイン
+                return time < rank[rank.length - 1].time;
+            }
+
+            // ★ ランクイン入力モーダル表示
+            function showRankingInputModal(difficulty, time) {
+                rankingModalTime.textContent = `タイム: ${time} びょう`;
+                playerNameInput.value = ''; // 入力欄をクリア
+                rankingModalOverlay.style.display = 'flex';
+
+                // 登録ボタンのリスナー（一度だけ設定）
+                rankingSubmitBtn.onclick = () => {
+                    let name = playerNameInput.value.trim();
+                    if (name === '') {
+                        name = 'ななしさん';
+                    }
+                    name = name.slice(0, 8); // 8文字に制限
+                    
+                    saveRanking(difficulty, name, time);
+                    
+                    rankingModalOverlay.style.display = 'none';
+                    
+                    // 結果画面を表示
+                    showScreen('connectResult');
+                    connectDoms.resultTitle.textContent = 'クリア！';
+                    connectDoms.resultTime.textContent = `かかったじかん: ${secondsElapsed} びょう (とうろくしたよ！)`;
+                    displayConnectExplanations();
+
+                    // スタート画面のランキングを更新
+                    displayRanking();
+                };
             }
 
             function displayConnectExplanations() {
@@ -742,7 +1064,16 @@
                 });
             });
             connectDoms.restartButton.addEventListener('click', () => {
+                // ★ スタート画面に戻る前にランキングを再表示
+                displayRanking();
                 showScreen('connectStart');
+                pauseBGM(); // ★ BGM停止 (スタート画面に戻るため)
+            });
+            // ★ おわるボタン リスナー
+            connectDoms.quitButton.addEventListener('click', () => {
+                stopConnectTimer(); // ゲームを一時停止
+                pauseBGM(); // ★ BGM一時停止
+                confirmModalOverlay.style.display = 'flex';
             });
 
 
@@ -758,11 +1089,12 @@
                 explanationArea: document.getElementById('find-explanation-area'),
                 restartBtn: document.getElementById('find-restart-button'),
                 backBtn: document.getElementById('find-back-button'),
+                quitButton: document.getElementById('find-quit-game'), // ★ 追加
             };
 
             const SVG_NS = "http://www.w3.org/2000/svg";
 
-            // ★ 変更点: さがしゲーム データ (保護色テーマ)
+            // さがしゲーム データ (保護色テーマ)
             const findGameData = [
                 { 
                     id: 'A', name: 'ナナフシ', hint: 'ほそながい えだ？', 
@@ -821,7 +1153,7 @@
                 },
             ];
             
-            // ★ 変更点: SVG背景 (より複雑に)
+            // SVG背景 (より複雑に)
             const findGameBG = `
                 <!-- そら -->
                 <rect width="400" height="200" fill="#87CEEB"></rect>
@@ -863,12 +1195,16 @@
                 updateTargetList();
                 placeAnimals();
                 showScreen('findGame');
+                playBGM(); // ★ BGM再生
             }
             
             // 探すリストをUIに表示
             function updateTargetList(foundId = null) {
                 if (foundId === null) {
-                    findDoms.targetList.innerHTML = '';
+                    // おわるボタンがあるので、innerHTMLの全消しはしない
+                    // 既存の .target-item を削除
+                    findDoms.targetList.querySelectorAll('.target-item').forEach(item => item.remove());
+                    
                     findGameTargets.forEach(target => {
                         const item = document.createElement('span');
                         item.id = `target-item-${target.id}`;
@@ -934,17 +1270,74 @@
                 findDoms.explanationArea.innerHTML = '';
                 findGameTargets.forEach(target => {
                     const p = document.createElement('p');
-                    p.textContent = findGameExplanations[target.id] || 'みつけたね！';
+
+                    // XSS対策 (簡易)
+                    const safeExplanation = document.createTextNode(findGameExplanations[target.id] || 'みつけたね！').textContent;
+                    p.textContent = safeExplanation;
                     findDoms.explanationArea.appendChild(p);
                 });
             }
             
             // さがしゲーム リスナー設定
             findDoms.restartBtn.addEventListener('click', initFindGame);
-            findDoms.backBtn.addEventListener('click', () => showScreen('gameSelect'));
+            findDoms.backBtn.addEventListener('click', () => {
+                showScreen('gameSelect');
+                pauseBGM(); // ★ BGM停止
+            });
+            // ★ おわるボタン リスナー
+            findDoms.quitButton.addEventListener('click', () => {
+                pauseBGM(); // ★ BGM一時停止
+                confirmModalOverlay.style.display = 'flex';
+            });
+
+            // --- ★ 共通 確認モーダル リスナー ---
+            confirmCancelBtn.addEventListener('click', () => {
+                confirmModalOverlay.style.display = 'none';
+                // コネクトゲーム中ならタイマー再開
+                if (screens.connectGame.classList.contains('active')) {
+                    startConnectTimer(); 
+                    playBGM(); // ★ BGM再開
+                } else if (screens.findGame.classList.contains('active')) {
+                    playBGM(); // ★ BGM再開
+                }
+            });
+
+            confirmOkBtn.addEventListener('click', () => {
+                confirmModalOverlay.style.display = 'none';
+                stopConnectTimer(); // 念のためタイマー停止
+                pauseBGM(); // ★ BGM停止 (OKボタンなので)
+                
+                // 現在アクティブな画面に応じて戻る
+                if (screens.connectGame.classList.contains('active')) {
+                    displayRanking();
+                    showScreen('connectStart');
+                } else if (screens.findGame.classList.contains('active')) {
+                    showScreen('gameSelect'); // さがしゲームはゲーム選択画面へ
+                }
+            });
+
+            // --- ★ ミュートボタン リスナー (bgMusic を bgm に修正) ---
+            muteToggleBtn.addEventListener('click', () => {
+                bgm.muted = !bgm.muted;
+                if (bgm.muted) {
+                    muteToggleBtn.textContent = 'おと だす🔈';
+                    bgm.pause(); // ミュートしたら停止
+                } else {
+                    muteToggleBtn.textContent = 'おと けす🔇';
+                    // ゲーム中なら再生
+                    if (screens.connectGame.classList.contains('active') || screens.findGame.classList.contains('active')) {
+                         bgm.play().catch(e => console.log("BGM再生エラー: ", e));
+                    }
+                }
+            });
+
+            // --- 初期化 ---
+            displayRanking(); // 起動時に全ランキングを表示
 
         });
     </script>
 </body>
 </html>
+
+
 
