@@ -243,7 +243,7 @@
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-        /* ★ 確認モーダル */
+        /* 確認モーダル */
         #confirm-modal-content {
             background: white;
             border-radius: 16px;
@@ -254,7 +254,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
-        /* ★ エラー入力 (シェイク) */
+        /* エラー入力 (シェイク) */
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
           10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
@@ -308,7 +308,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             max-width: 800px;
             width: 100%;
-            position: relative; /* ★ おわるボタン配置のため */
+            position: relative; /* おわるボタン配置のため */
         }
         .target-item {
             font-size: 1.1rem;
@@ -341,7 +341,7 @@
             font-size: 1.1rem; /* 18px */
         }
 
-        /* --- ★ 設定画面 --- */
+        /* --- 設定画面 --- */
         #settings-screen .setting-item {
             width: 100%;
             max-width: 400px;
@@ -384,7 +384,7 @@
                     <button id="select-find-game" class="game-button bg-yellow-500 hover:bg-yellow-600">
                         👀 いきもの かくれんぼ
                     </button>
-                    <!-- ★ 設定ボタン -->
+                    <!-- 設定ボタン -->
                     <button id="settings-button" class="game-button bg-gray-500 hover:bg-gray-600">
                         ⚙️ せってい
                     </button>
@@ -392,7 +392,7 @@
             </div>
         </div>
 
-        <!-- ★ 設定画面 (新規追加) -->
+        <!-- 設定画面 -->
         <div id="settings-screen" class="screen">
             <div class="text-center p-6 bg-white rounded-2xl shadow-xl max-w-lg w-full">
                 <h1 class="game-title text-gray-700">⚙️ せってい</h1>
@@ -413,7 +413,8 @@
                     <select id="bgm-select">
                         <option value="music.mp3">ミュージック 1</option>
                         <option value="music2.mp3">ミュージック 2</option>
-                        <option value="music3.mp3">ミュージック 3</option> <!-- ★ 追加 -->
+                        <option value="music3.mp3">ミュージック 3</option>
+                        <option value="random">ランダム</option>
                     </select>
                 </div>
 
@@ -438,7 +439,7 @@
                 <h1 class="game-title text-blue-600">いきものコネクト！</h1>
                 <p class="game-subtitle">みぢかな なかまを みつけよう</p>
 
-                <!-- ★★★ 3カラム ランキング表示エリア ★★★ -->
+                <!-- 3カラム ランキング表示エリア -->
                 <div id="ranking-section" class="w-full mb-6">
                     <h3 class="text-2xl font-bold text-gray-700 mb-4">🏆 ランキング 🏆</h3>
                     <div class="flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0 sm:space-x-4">
@@ -469,7 +470,7 @@
 
                     </div>
                 </div>
-                <!-- ★★★ ここまで ★★★ -->
+                <!-- ここまで -->
                 
                 <div class="space-y-4">
                     <button data-difficulty="tutorial" class="difficulty-btn game-button bg-green-500 hover:bg-green-600">
@@ -503,7 +504,7 @@
                         <span class="text-lg font-bold text-gray-600">じかん:</span>
                         <span id="timer" class="text-2xl font-extrabold text-red-600">0</span>
                     </div>
-                    <!-- ★ おわるボタン追加 -->
+                    <!-- おわるボタン追加 -->
                     <button id="connect-quit-game" class="text-sm font-bold bg-gray-200 text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-300">
                         おわる
                     </button>
@@ -542,7 +543,7 @@
                 
                 <div id="find-game-targets">
                     <!-- さがす対象リストがJSで入ります -->
-                    <!-- ★ おわるボタン追加 -->
+                    <!-- おわるボタン追加 -->
                     <button id="find-quit-game" class="absolute top-2 right-2 text-sm font-bold bg-gray-200 text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-300">
                         おわる
                     </button>
@@ -612,7 +613,7 @@
         </div>
     </div>
 
-    <!-- ★ ゲーム終了 確認モーダル -->
+    <!-- ゲーム終了 確認モーダル -->
     <div id="confirm-modal-overlay" class="modal-overlay">
         <div id="confirm-modal-content">
             <h3 class="text-xl font-bold mb-4">ほんとうに おわりますか？</h3>
@@ -624,7 +625,7 @@
         </div>
     </div>
 
-    <!-- ★ ランキングリセット 確認モーダル (新規追加) -->
+    <!-- ランキングリセット 確認モーダル (新規追加) -->
     <div id="confirm-reset-modal" class="modal-overlay">
         <div id="confirm-modal-content"> <!-- 既存のスタイルを流用 -->
             <h3 class="text-xl font-bold mb-4">かくにん</h3>
@@ -636,11 +637,11 @@
         </div>
     </div>
 
-    <!-- ★ BGM用 (MuteボタンとAudioタグ) -->
+    <!-- BGM用 (MuteボタンとAudioタグ) -->
     <button id="mute-toggle-btn" class="fixed bottom-4 right-4 bg-white p-3 rounded-full shadow-lg z-50 text-lg font-bold">
         BGM 🎵
     </button>
-    <!-- ★ src を削除 (JSで設定) -->
+    <!-- src を削除 (JSで設定) -->
     <audio id="bgm" loop></audio>
 
 
@@ -650,7 +651,7 @@
             // --- 0. 共通 DOM とロジック ---
             const screens = {
                 gameSelect: document.getElementById('game-select-screen'),
-                settings: document.getElementById('settings-screen'), // ★ 追加
+                settings: document.getElementById('settings-screen'), // 追加
                 connectStart: document.getElementById('connect-start-screen'),
                 connectGame: document.getElementById('connect-game-screen'),
                 connectResult: document.getElementById('connect-result-screen'),
@@ -673,17 +674,19 @@
             const playerNameInput = document.getElementById('player-name-input');
             const rankingSubmitBtn = document.getElementById('ranking-submit-btn');
 
-            // ★ 確認モーダル DOM (終了確認)
+            // 確認モーダル DOM (終了確認)
             const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
             const confirmOkBtn = document.getElementById('confirm-ok-btn');
             const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
             let confirmModalTarget = ''; // 'connectGame' or 'findGame'
 
-            // ★ BGM DOM
+            // BGM DOM
             const bgm = document.getElementById('bgm');
             const muteToggleBtn = document.getElementById('mute-toggle-btn');
+            const bgmList = ['music.mp3', 'music2.mp3', 'music3.mp3']; // ランダム用
+            let currentBGMMode = 'music.mp3'; // BGMモード管理
 
-            // ★ 設定画面 DOM (新規追加)
+            // 設定画面 DOM (新規追加)
             const settingsButton = document.getElementById('settings-button');
             const settingsBackButton = document.getElementById('settings-back-button');
             const volumeSlider = document.getElementById('volume-slider');
@@ -695,23 +698,23 @@
             
             // localStorage用キー
             const RANKING_KEY = 'biodiversityGameRanking';
-            const VOLUME_KEY = 'biodiversityGameVolume'; // ★ 追加
-            const BGM_KEY = 'biodiversityGameBGM'; // ★ 追加
+            const VOLUME_KEY = 'biodiversityGameVolume'; // 追加
+            const BGM_KEY = 'biodiversityGameBGM'; // 追加
 
             // 画面切り替え
             function showScreen(screenId) {
                 Object.values(screens).forEach(screen => screen.classList.remove('active'));
                 screens[screenId].classList.add('active');
 
-                // ★ BGM再生/停止
+                // BGM再生/停止
                 if (screenId === 'connectGame' || screenId === 'findGame') {
                     // ゲーム画面で再生
-                    if (!bgm.muted && bgm.src) { // ★ src があるか確認
-                        bgm.play().catch(e => console.log("BGM再生エラー: ユーザー操作が必要です。"));
+                    if (!bgm.muted && bgm.src) { // src があるか確認
+                        playBGM(); // playBGM を呼ぶ
                     }
                 } else {
                     // それ以外の画面で停止
-                    bgm.pause();
+                    pauseBGM(); // pauseBGM を呼ぶ
                     bgm.currentTime = 0;
                 }
             }
@@ -722,7 +725,7 @@
                 simpleModalContent.className = type === 'success' ? 'success' : 'error';
                 simpleModalOverlay.style.display = 'flex';
                 
-                // ★ duration を 800ms (0.8s) に変更 (不正解時)
+                // duration を 800ms (0.8s) に変更 (不正解時)
                 const displayDuration = type === 'error' ? 800 : duration;
 
                 setTimeout(hideSimpleModal, displayDuration);
@@ -731,9 +734,9 @@
                 simpleModalOverlay.style.display = 'none';
             }
 
-            // ★ BGM再生/停止/ミュート
+            // BGM再生/停止/ミュート
             function playBGM() {
-                if (bgm.src && bgm.paused && !bgm.muted) { // ★ src があり、ミュートでないか確認
+                if (bgm.src && bgm.paused && !bgm.muted) { // src があり、ミュートでないか確認
                     bgm.play().catch(e => console.log("BGM play failed:", e));
                 }
             }
@@ -742,10 +745,10 @@
             }
             muteToggleBtn.addEventListener('click', () => {
                 bgm.muted = !bgm.muted;
-                // ★ ボタンのテキスト変更
+                // ボタンのテキスト変更
                 muteToggleBtn.textContent = bgm.muted ? 'BGM 🔇' : 'BGM 🎵';
                 
-                // ★ ミュートしたら停止、解除したら再生（ゲーム中のみ）
+                // ミュートしたら停止、解除したら再生（ゲーム中のみ）
                 if (bgm.muted) {
                     pauseBGM();
                 } else {
@@ -754,6 +757,22 @@
                     }
                 }
             });
+            
+            // ランダム再生関数
+            function playRandomBGM() {
+                const randomBGM = bgmList[Math.floor(Math.random() * bgmList.length)];
+                bgm.src = randomBGM;
+                if (!bgm.muted && (screens.connectGame.classList.contains('active') || screens.findGame.classList.contains('active'))) {
+                    playBGM(); // playBGM() が再生をハンドル
+                }
+            }
+
+            // BGMが終了したら、ランダムモードなら次を再生
+            bgm.onended = function() {
+                if (currentBGMMode === 'random') {
+                    playRandomBGM();
+                }
+            };
 
             // ゲーム選択ボタンのリスナー
             document.getElementById('select-connect-game').addEventListener('click', () => showScreen('connectStart'));
@@ -761,29 +780,36 @@
             document.getElementById('connect-back-button').addEventListener('click', () => {
                 showScreen('gameSelect');
             });
-            // ★ 設定画面リスナー (新規追加)
+            // 設定画面リスナー (新規追加)
             settingsButton.addEventListener('click', () => showScreen('settings'));
             settingsBackButton.addEventListener('click', () => showScreen('gameSelect'));
 
-            // ★ 音量スライダーリスナー
+            // 音量スライダーリスナー
             volumeSlider.addEventListener('input', (e) => {
                 const volume = e.target.value;
                 bgm.volume = volume;
                 localStorage.setItem(VOLUME_KEY, volume);
             });
 
-            // ★ BGM選択リスナー
+            // BGM選択リスナー
             bgmSelect.addEventListener('change', (e) => {
                 const selectedBGM = e.target.value;
-                bgm.src = selectedBGM;
+                currentBGMMode = selectedBGM; // モードを保存
                 localStorage.setItem(BGM_KEY, selectedBGM);
-                // BGMを変更してすぐ再生 (ミュートでなければ)
+                
+                if (selectedBGM === 'random') {
+                    playRandomBGM(); // すぐにランダム再生を開始
+                } else {
+                    bgm.src = selectedBGM; // 特定のBGMを設定
+                }
+                
+                // BGMを変更してすぐ再生 (ミュートでなければ、かつゲーム中なら)
                 if (!bgm.muted && (screens.connectGame.classList.contains('active') || screens.findGame.classList.contains('active'))) {
                     playBGM();
                 }
             });
 
-            // ★ ランキングリセットリスナー
+            // ランキングリセットリスナー
             resetRankingBtn.addEventListener('click', () => {
                 confirmResetModal.style.display = 'flex';
             });
@@ -796,7 +822,7 @@
                 confirmResetModal.style.display = 'none';
             });
 
-            // ★ 終了確認モーダルリスナー
+            // 終了確認モーダルリスナー
             confirmCancelBtn.addEventListener('click', () => {
                 confirmModalOverlay.style.display = 'none';
                 // ゲーム中の場合、タイマーやBGMを再開
@@ -831,11 +857,13 @@
                 quitGameBtn: document.getElementById('connect-quit-game'),
             };
 
-            // ★ カードのペア定義（難易度ごとに重複しないように）
+            // カードのペア定義（難易度ごとに重複しないように）
             const allPairs = {
                 tutorial: [
                     { id: 't1', emoji: '🐸', name: 'カエル', partner: 't2', exp: '「カエル」と「オタマジャクシ」は おなじいきもの（おやこ）だよ。みずのなかから りくのうえに すむばしょが かわるんだ。' },
-                    { id: 't2', emoji: '...<br>🐸', name: 'オタマジャクシ', partner: 't1', exp: '「オタマジャクシ」は「カエル」の あかちゃんだよ。おおきくなると てあしが はえてくるんだ。' }
+                    { id: 't2', emoji: '...<br>🐸', name: 'オタマジャクシ', partner: 't1', exp: '「オタマジャクシ」は「カエル」の あかちゃんだよ。おおきくなると てあしが はえてくるんだ。' },
+                    { id: 't3', emoji: '🦋', name: 'チョウ', partner: 't4', exp: '「チョウ」は「ようちゅう」が せいちょうした すがただよ。' },
+                    { id: 't4', emoji: '🐛', name: 'ようちゅう', partner: 't3', exp: '「ようちゅう」は「チョウ」の あかちゃん。はっぱを たべて おおきくなるよ。' }
                 ],
                 easy: [
                     { id: 'e1', emoji: '🦋', name: 'チョウ', partner: 'e2', exp: '「チョウ」は「ようちゅう」が せいちょうした すがただよ。' },
@@ -845,7 +873,7 @@
                     { id: 'e5', emoji: '🐞', name: 'テントウムシ', partner: 'e6', exp: '「テントウムシ」は「アブラムシ」を たべてくれる、はたけの みかただよ。' },
                     { id: 'e6', emoji: '...<br>🐜', name: 'アブラムシ', partner: 'e5', exp: '「アブラムシ」は しょくぶつの しるを すう ちいさなムシ。テントウムシの ごはんだよ。' },
                     { id: 'e7', emoji: '...<br>🕷️', name: 'クモ', partner: 'e8', exp: '「クモ」は すを はって、つかまえた「コバエ」などの ちいさなムシを たべるよ。' },
-                    { id: 'e8', emoji: '...<br>🦟', name: 'コバエ', partner: 'e7', exp: '「コバエ」などの ちいさなムシは、「クモ」の ごはんになるんだ。' },
+                    { id: 'e8', emoji: '...<br>🦟', name: 'コバえ', partner: 'e7', exp: '「コバエ」などの ちいさなムシは、「クモ」の ごはんになるんだ。' },
                     { id: 'e9', emoji: '🍒', name: 'きの み', partner: 'e10', exp: '「きの み」は「クマ」の だいじな たべもの。もりで くらす どうぶつを ささえるよ。' },
                     { id: 'e10', emoji: '🐻', name: 'クマ', partner: 'e9', exp: '「クマ」は「きの み」や さかなを たべて いきているよ。' },
                     { id: 'e11', emoji: '...<br>🐌', name: 'カタツムリ', partner: 'e12', exp: '「カタツムリ」は「アジサイ」の はっぱが だいすき。ジメジメした ところに いるよ。' },
@@ -902,14 +930,14 @@
             let seconds = 0;
             let currentDifficulty = '';
             let currentExplanations = [];
-            let wrongStreak = 0; // ★ 不正解カウント
+            let wrongStreak = 0; // 不正解カウント
 
-            // ★ ランキング取得
+            // ランキング取得
             function getRanking(difficulty) {
                 const rankings = JSON.parse(localStorage.getItem(RANKING_KEY)) || {};
                 return rankings[difficulty] || [];
             }
-            // ★ ランキング表示
+            // ランキング表示
             function displayRanking() {
                 const difficulties = ['easy', 'medium', 'hard'];
                 difficulties.forEach(diff => {
@@ -1010,7 +1038,7 @@
                 secondCard = clickedCard;
                 lockBoard = true; // 2枚めくったらロック
                 
-                // ★ 少し待ってから判定
+                // 少し待ってから判定
                 setTimeout(checkForMatch, 500);
             }
 
@@ -1019,11 +1047,11 @@
                 const isMatch = firstCard.dataset.id === secondCard.dataset.partner;
                 
                 if (isMatch) {
-                    // ★ 正解時
+                    // 正解時
                     wrongStreak = 0; // 不正解カウントリセット
                     showSimpleModal('success', 'せいかい！', 500); // すぐ消す
                     
-                    // ★ すぐに解説表示
+                    // すぐに解説表示
                     const exp1 = `<b>${firstCard.dataset.name} (${firstCard.dataset.emoji})</b>:<br>${firstCard.dataset.exp}`;
                     const exp2 = `<b>${secondCard.dataset.name} (${secondCard.dataset.emoji})</b>:<br>${secondCard.dataset.exp}`;
                     // ペアの解説をキューに入れる
@@ -1033,13 +1061,13 @@
                     setTimeout(showNextExplanation, 500);
                     
                 } else {
-                    // ★ 不正解時
+                    // 不正解時
                     wrongStreak++;
                     showSimpleModal('error', 'ざんねん…'); // 0.8秒表示
                     // 0.8秒待ってから裏返す
                     setTimeout(unflipCards, 800);
                     
-                    // ★ 5回連続で間違えたらヒント
+                    // 5回連続で間違えたらヒント
                     if (wrongStreak >= 5) {
                         wrongStreak = 0;
                         setTimeout(showHint, 1000); // 1秒後
@@ -1047,7 +1075,7 @@
                 }
             }
             
-            // ★ 解説モーダルを順次表示
+            // 解説モーダルを順次表示
             function showNextExplanation() {
                 if (currentExplanations.length > 0) {
                     const pairExp = currentExplanations.shift(); // 最初の解説を取り出す
@@ -1089,7 +1117,7 @@
                 lockBoard = false;
             }
 
-            // ★ ヒント表示
+            // ヒント表示
             function showHint() {
                 showSimpleModal('success', 'ヒント！💡', 1500);
                 // まだマッチしていないカードをすべて取得
@@ -1148,7 +1176,7 @@
                 }
             }
 
-            // ★ ランキングチェック
+            // ランキングチェック
             function checkRanking(time, difficulty) {
                 const rankings = getRanking(difficulty);
                 if (rankings.length < 10 || time < rankings[rankings.length - 1].time) {
@@ -1158,7 +1186,7 @@
                 }
             }
 
-            // ★ ランキング保存
+            // ランキング保存
             function saveRanking(name, time, difficulty) {
                 const allRankings = JSON.parse(localStorage.getItem(RANKING_KEY)) || {};
                 const rankings = allRankings[difficulty] || [];
@@ -1175,18 +1203,18 @@
                 localStorage.setItem(RANKING_KEY, JSON.stringify(allRankings));
             }
 
-            // ★ ランキング登録処理
+            // ランキング登録処理
             function handleRankingSubmit() {
                 const name = playerNameInput.value;
                 const time = seconds;
                 
                 if (!name || name.trim() === '') {
-                    // ★ 修正: 'break;' は無効。'return;' を使い、フィードバックを追加。
+                    // 修正: 'break;' は無効。'return;' を使い、フィードバックを追加。
                     playerNameInput.classList.add('is-invalid');
                     setTimeout(() => {
                         playerNameInput.classList.remove('is-invalid');
                     }, 500); // 0.5秒後にクラスを削除
-                    return; 
+                    return; // ★★★ エラー修正: 'break;' から 'return;' に変更 ★★★
                 }
 
                 saveRanking(name, time, currentDifficulty);
@@ -1224,7 +1252,7 @@
             connectGameDoms.restartBtn.addEventListener('click', () => {
                 showScreen('connectStart');
             });
-            // ★ おわるボタン
+            // おわるボタン
             connectGameDoms.quitGameBtn.addEventListener('click', () => {
                 confirmModalTarget = 'connectGame';
                 confirmModalOverlay.style.display = 'flex';
@@ -1321,7 +1349,7 @@
                 // 2. 解説をモーダルで表示
                 explanationText.innerHTML = `<b>${name} を みつけた！</b><br><br>${exp}`;
                 explanationModalOverlay.style.display = 'flex';
-                // ★ 解説モーダルの閉じるボタンは「showNextExplanation」ではなく、
+                // 解説モーダルの閉じるボタンは「showNextExplanation」ではなく、
                 //    単純に閉じるだけにする（イベントリスナーは共通）
                 //    → コネクトゲーム側で showNextExplanation を設定しているので
                 //      ここでは何もしなくても大丈夫。
@@ -1353,14 +1381,14 @@
             findGameDoms.backBtn.addEventListener('click', () => {
                 showScreen('gameSelect');
             });
-            // ★ おわるボタン
+            // おわるボタン
             findGameDoms.quitGameBtn.addEventListener('click', () => {
                 confirmModalTarget = 'findGame';
                 confirmModalOverlay.style.display = 'flex';
                 pauseBGM(); // 確認中はBGM停止
             });
 
-            // --- ★ 設定読み込み関数 (新規追加) ---
+            // --- 設定読み込み関数 (新規追加) ---
             function loadSettings() {
                 // 音量設定
                 const savedVolume = localStorage.getItem(VOLUME_KEY);
@@ -1376,10 +1404,19 @@
                 const savedBGM = localStorage.getItem(BGM_KEY);
                 if (savedBGM) {
                     bgmSelect.value = savedBGM;
-                    bgm.src = savedBGM;
+                    currentBGMMode = savedBGM; // モードを保存
                 } else {
                     bgmSelect.value = 'music.mp3'; // デフォルトBGM
-                    bgm.src = 'music.mp3';
+                    currentBGMMode = 'music.mp3';
+                }
+                
+                // BGMのsrcを設定
+                if (currentBGMMode === 'random') {
+                    // ランダムモードなら、再生リストからランダムに選んで設定
+                    bgm.src = bgmList[Math.floor(Math.random() * bgmList.length)];
+                } else {
+                    // 特定のBGMを設定
+                    bgm.src = currentBGMMode;
                 }
                 
                 // ミュートボタンの初期状態
@@ -1388,7 +1425,7 @@
 
 
             // --- 初期化 ---
-            loadSettings(); // ★ 設定を読み込む
+            loadSettings(); // 設定を読み込む
             displayRanking(); // 起動時に全ランキングを表示
 
         });
